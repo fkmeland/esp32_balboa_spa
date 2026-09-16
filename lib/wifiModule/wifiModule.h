@@ -4,15 +4,7 @@
 
 #include "../../src/config.h" // Default passwords and SSID
 
-#ifndef WIFI_SSID
-#warning "WIFI_SSID not defined, please define in config.h"
-#define WIFI_SSID "spa"
-#endif
-
-#ifndef WIFI_PASSWORD
-#warning "WIFI_PASSWORD not defined, please define in config.h"
-#define WIFI_PASSWORD "password"
-#endif
+// Credentials are now managed by WiFiManager via NVS.
 
 // Optional: lock STA to one mesh node (AP MAC). Omit for strongest-AP selection.
 // Example: #define WIFI_BSSID "aa:bb:cc:dd:ee:ff"

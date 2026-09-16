@@ -349,17 +349,24 @@ static void maybeLogPendingTime()
 
 void wifiModuleSetup()
 {
-  String s = WiFi.macAddress();
-  sprintf(gatewayName, "spa-%.2s%.2s%.2s%.2s%.2s%.2s", s.c_str(),
-          s.c_str() + 3, s.c_str() + 6, s.c_str() + 9, s.c_str() + 12,
-          s.c_str() + 15);
+  sprintf(gatewayName, "spa");
+
+  wifiManager.setConfigPortalTimeout(180);
+  bool res = wifiManager.autoConnect("Balboa_SPA", "esp32balboa");
+  if (!res) {
+    Log.warning(F("[WiFi]: WiFiManager failed to connect or timed out, continuing..." CR));
+  } else {
+    Log.notice(F("[WiFi]: WiFiManager connected!" CR));
+  }
+
+  WiFi.setHostname(gatewayName);
+  ArduinoOTA.setHostname(gatewayName);
 
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAP("Balboa_SPA", "esp32balboa");
   WiFi.setSleep(false);
   WiFi.setAutoReconnect(false);
-  WiFi.setHostname(gatewayName);
-  ArduinoOTA.setHostname(gatewayName);
+  
   // TX power after STA is up — setTxPower can no-op before mode start on this core.
   WiFi.setTxPower(WIFI_POWER_19_5dBm);
 
@@ -412,15 +419,15 @@ void wifiConnect()
 
   if (wifiBssidLock)
   {
-    Log.notice(F("[WiFi]: Connecting to %s (BSSID %s) attempt #%lu" CR),
-               WIFI_SSID, wifiBssidLockStr, wifiConnectAttempts);
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD, 0, wifiBssidBytes, true);
+    Log.notice(F("[WiFi]: Connecting (BSSID %s) attempt #%lu" CR),
+               wifiBssidLockStr, wifiConnectAttempts);
+    WiFi.begin((const char*)nullptr, (const char*)nullptr, 0, wifiBssidBytes, true); // Use saved SSID/PASS, provide BSSID
   }
   else
   {
-    Log.notice(F("[WiFi]: Connecting to %s (strongest AP) attempt #%lu" CR),
-               WIFI_SSID, wifiConnectAttempts);
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    Log.notice(F("[WiFi]: Connecting (strongest AP) attempt #%lu" CR),
+               wifiConnectAttempts);
+    WiFi.begin(); // Uses saved NVS credentials
   }
 }
 
