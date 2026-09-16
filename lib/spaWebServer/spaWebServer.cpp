@@ -1777,7 +1777,7 @@ static String statusLastUpdateDisplayHtml(unsigned long epoch)
 static unsigned long statusSnapshotAgeSec()
 {
   time_t now = getTime();
-  if (now <= 0 || spaStatusData.lastUpdate == 0)
+  if (now <= 0 || spaStatusData.lastUpdateMs == 0)
   {
     return 0;
   }
@@ -2138,7 +2138,7 @@ static void appendStatusControlCell(HtmlOut &html, const char *label, const char
 /** Spa status `tempScale`: 0 = Fahrenheit (1°F steps), 1 = Celsius (0.5°C steps). */
 static bool statusSpaTempReady()
 {
-  return spaStatusData.lastUpdate != 0;
+  return spaStatusData.lastUpdateMs != 0;
 }
 
 static String statusTempDegreeSuffixStr()
@@ -2731,7 +2731,7 @@ void handleConfig(AsyncWebServerRequest *request)
 
   html += "<section class='panel' id='cfg-equipment'><h1>Equipment wiring (configuration)</h1>";
   html += "<p class=\"chart-caption\" style=\"margin:0 0 10px 0\">For live state and controls, see <a href='/status'>Spa Status</a>.</p>";
-  if (spaConfigurationData.lastUpdate == 0)
+  if (spaConfigurationData.lastUpdateMs == 0)
   {
     html += "<p style=\"margin:0\"><em>Configuration frame not available yet.</em></p>";
   }
@@ -2770,7 +2770,7 @@ void handleConfig(AsyncWebServerRequest *request)
   html += "<p class=\"chart-caption\" style=\"margin:0 0 10px 0\">Decoded from the spa <strong>Information</strong> response "
           "(Balboa message type <code>0x24</code>). Field meanings match "
           "<a href=\"https://github.com/ccutrer/balboa_worldwide_app/blob/main/doc/protocol.md\" target=\"_blank\" rel=\"noopener\">protocol.md — Information Response</a>.</p>";
-  if (spaInformationData.lastUpdate == 0)
+  if (spaInformationData.lastUpdateMs == 0)
   {
     html += "<p style=\"margin:0\"><em>Not received yet.</em> The gateway requests this after startup; wait on RS485 or check "
             "<a href='/state'>ESP State</a> → Spa Data Freshness → Information.</p>";
@@ -2799,7 +2799,7 @@ void handleConfig(AsyncWebServerRequest *request)
     html += "<p class=\"chart-caption\" style=\"margin:0 0 10px 0\">Times use the spa panel clock time and format "
             "(<a href='/status'>configure on Spa Status</a>).</p>";
   }
-  if (spaFilterSettingsData.lastUpdate == 0)
+  if (spaFilterSettingsData.lastUpdateMs == 0)
   {
     html += "<p style=\"margin:0\"><em>Filter settings not received yet — editing disabled until RS485 data is available.</em></p>";
   }
