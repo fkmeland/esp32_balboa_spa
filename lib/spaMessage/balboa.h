@@ -347,7 +347,8 @@ const std::map<uint8_t, const char *> filterModeMap = {
 const std::map<uint8_t, const char *> heatingModeMap = {
     {0, "Ready"},
     {1, "Rest"},
-    {3, "Ready in Rest"}};
+    {2, "Ready in Rest"},
+    {3, "None"}};
 
 /** Status byte 10 bits 4–5: heating activity / stage (not heating mode). */
 const std::map<uint8_t, const char *> heatingStateMap = {
