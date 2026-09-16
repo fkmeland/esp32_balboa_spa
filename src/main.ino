@@ -13,7 +13,6 @@
 #include <spaMessage.h>
 #include <spaWebServer.h>
 #include <spaUtilities.h>
-#include <mqttModule.h>
 #include <rs485.h>
 #include <bridge.h>
 #include <spaEpaper.h>
@@ -118,8 +117,6 @@ void setup()
   WiFi.onEvent(onStationModeDisconnected, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 #endif
   wifiModuleSetup();
-  logSection("MQTT Module Setup");
-  mqttModuleSetup();
 #ifdef LOCAL_CLIENT
   logSection("RS485 Module Setup");
   rs485Setup();
@@ -185,7 +182,6 @@ void loop()
 
   if (WiFi.status() == WL_CONNECTED)
   {
-    mqttModuleLoop();
 #ifdef REMOTE_CLIENT
     if (findSpaLoop())
     {

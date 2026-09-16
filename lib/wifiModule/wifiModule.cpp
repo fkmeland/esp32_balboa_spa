@@ -354,7 +354,8 @@ void wifiModuleSetup()
           s.c_str() + 3, s.c_str() + 6, s.c_str() + 9, s.c_str() + 12,
           s.c_str() + 15);
 
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAP("Balboa_SPA", "esp32balboa");
   WiFi.setSleep(false);
   WiFi.setAutoReconnect(false);
   WiFi.setHostname(gatewayName);
