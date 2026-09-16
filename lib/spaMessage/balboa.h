@@ -13,7 +13,7 @@
 #define STALE_TIME 60 * 60
 #define RETRY_TIME 10 * 60
 
-#define staleData(key) (key.lastUpdate == 0 || key.lastUpdate + STALE_TIME < getTime())
+#define staleData(key) (key.lastUpdateMs == 0 || (millis() - key.lastUpdateMs) > (STALE_TIME)*1000UL)
 // Retry pacing runs on millis(), not wall clock: getTime() is 0 until NTP syncs, and a request
 // stamped during that window could never satisfy lastRequest + RETRY_TIME < 0 — one lost frame
 // froze that dataset until NTP appeared. Unsigned subtraction stays correct across millis()
@@ -127,6 +127,8 @@ struct SpaStatusData
 {
   uint8_t crc;
   unsigned long lastUpdate;
+  unsigned long lastUpdateMs;
+
   u_int32_t magicNumber;
   uint8_t rawData[BALBOA_MESSAGE_SIZE];
   uint8_t rawDataLength;
@@ -193,6 +195,7 @@ struct SpaConfigurationData
 {
   uint8_t crc;
   unsigned long lastUpdate;
+  unsigned long lastUpdateMs;
   unsigned long lastRequest;
   unsigned long lastRequestMs; // millis() of last request (0 = never); before magicNumber so the layout shift reinits RTC_NOINIT data post-OTA
   u_int32_t magicNumber;
@@ -219,6 +222,7 @@ struct SpaFilterSettingsData
 {
   uint8_t crc;
   unsigned long lastUpdate;
+  unsigned long lastUpdateMs;
   unsigned long lastRequest;
   unsigned long lastRequestMs; // millis() of last request (0 = never); before magicNumber so the layout shift reinits RTC_NOINIT data post-OTA
   u_int32_t magicNumber;
@@ -240,6 +244,7 @@ struct SpaFaultLogData
 {
   uint8_t crc;
   unsigned long lastUpdate;
+  unsigned long lastUpdateMs;
   unsigned long lastRequest;
   unsigned long lastRequestMs; // millis() of last request (0 = never); before magicNumber so the layout shift reinits RTC_NOINIT data post-OTA
   u_int32_t magicNumber;
@@ -259,6 +264,7 @@ struct SpaInformationData
 {
   uint8_t crc;
   unsigned long lastUpdate;
+  unsigned long lastUpdateMs;
   unsigned long lastRequest;
   unsigned long lastRequestMs; // millis() of last request (0 = never); before magicNumber so the layout shift reinits RTC_NOINIT data post-OTA
   u_int32_t magicNumber;
@@ -277,6 +283,7 @@ struct WiFiModuleConfigurationData
 {
   uint8_t crc;
   unsigned long lastUpdate;
+  unsigned long lastUpdateMs;
   unsigned long lastRequest;
   unsigned long lastRequestMs; // millis() of last request (0 = never); before magicNumber so the layout shift reinits RTC_NOINIT data post-OTA
   u_int32_t magicNumber;
@@ -288,6 +295,7 @@ struct SpaSettings0x04Data
 {
   uint8_t crc;
   unsigned long lastUpdate;
+  unsigned long lastUpdateMs;
   unsigned long lastRequest;
   unsigned long lastRequestMs; // millis() of last request (0 = never); before magicNumber so the layout shift reinits RTC_NOINIT data post-OTA
   u_int32_t magicNumber;
@@ -299,6 +307,7 @@ struct SpaPreferencesData
 {
   uint8_t crc;
   unsigned long lastUpdate;
+  unsigned long lastUpdateMs;
   unsigned long lastRequest;
   unsigned long lastRequestMs; // millis() of last request (0 = never); before magicNumber so the layout shift reinits RTC_NOINIT data post-OTA
   u_int32_t magicNumber;

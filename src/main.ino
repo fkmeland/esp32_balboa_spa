@@ -155,7 +155,7 @@ void loop()
   wifiModuleLoop();
 
 #ifdef LOCAL_CLIENT
-  if (WiFi.status() == WL_CONNECTED && wifiOtaIsStarted() &&
+  if (wifiOtaIsStarted() &&
       (rs485RetryPending() || (!rs485UartBegun() && !rs485SafeModeActive())))
   {
     (void)rs485EnsureUartBegun();
@@ -163,26 +163,23 @@ void loop()
 #ifdef M5_STATUS_LED
   {
     Rs485LedAlert alert = Rs485LedAlert::None;
-    if (WiFi.status() == WL_CONNECTED)
+    if (rs485SafeModeActive())
     {
-      if (rs485SafeModeActive())
-      {
-        alert = Rs485LedAlert::SafeMode;
-      }
-      else if (rs485UartBegun() && rs485UartUptimeMs() >= 15000u &&
-               rs485ValidFramesSinceBoot == 0)
-      {
-        alert = Rs485LedAlert::NoSpaData;
-      }
+      alert = Rs485LedAlert::SafeMode;
+    }
+    else if (rs485UartBegun() && rs485UartUptimeMs() >= 15000u &&
+             rs485ValidFramesSinceBoot == 0)
+    {
+      alert = Rs485LedAlert::NoSpaData;
     }
     ledControl.setRs485LedAlert(alert);
   }
 #endif
 #endif
 
+#ifdef REMOTE_CLIENT
   if (WiFi.status() == WL_CONNECTED)
   {
-#ifdef REMOTE_CLIENT
     if (findSpaLoop())
     {
       if (!spaCommunicationLoop(getSpaIP()))
@@ -191,13 +188,13 @@ void loop()
         resetSpaCount();
       }
     }
-#endif
-    spaMessageLoop();
-    spaWebServerLoop();
-#if defined(LOCAL_CONNECT) || defined(BRIDGE)
-    bridgeLoop();
-#endif
   }
+#endif
+  spaMessageLoop();
+  spaWebServerLoop();
+#if defined(LOCAL_CONNECT) || defined(BRIDGE)
+  bridgeLoop();
+#endif
 #ifdef M5_STATUS_LED
   ledControl.update();
 #endif

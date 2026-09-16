@@ -23,6 +23,7 @@ static unsigned long wifiOfflineLastLogMs = 0;
 static bool wifiOfflineRestartArmed = true;
 
 static bool wifiOtaStarted = false;
+static bool wifiStartOtaPending = false;
 static bool wifiOtaBootVerified = false;
 static char wifiOtaRunningPartitionLabel[17] = "";
 static char wifiOtaRunningPartitionState[20] = "";
@@ -308,17 +309,7 @@ static void applyConnectedSideEffects()
     }
   }
 
-  if (!wifiOtaStarted)
-  {
-    otaSetup();
-    wifiOtaStarted = true;
-#if CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    // Query/mark only after Wi‑Fi + ArduinoOTA are up. Calling esp_ota_* in
-    // wifiModuleSetup() can hang setup on some boards (observed AtomS3 USB CDC).
-    otaLogRunningPartitionState();
-    otaBootVerifyMarkValidIfPending();
-#endif
-  }
+// OTA is now started in wifiModuleLoop based on wifiStartOtaPending
 
 #ifdef TELNET_LOG
   if (!wifiTelnetStarted)
@@ -404,6 +395,9 @@ void wifiModuleSetup()
   Log.notice(F("[WiFi]: Hostname: %s" CR), WiFi.getHostname());
   Log.notice(F("[WiFi]: OTA Hostname: %s" CR), ArduinoOTA.getHostname().c_str());
   Log.notice(F("[WiFi]: App-owned async reconnect (autoReconnect=false)" CR));
+
+  // Defer OTA start to loop so it doesn't hang setup
+  wifiStartOtaPending = true;
 }
 
 void wifiConnect()
@@ -481,6 +475,19 @@ void wifiModuleLoop()
     resetReconnectBackoff();
     clearOfflineWatchdogOnRecovery();
     applyConnectedSideEffects();
+  }
+  if (wifiStartOtaPending)
+  {
+    wifiStartOtaPending = false;
+    if (!wifiOtaStarted)
+    {
+      otaSetup();
+      wifiOtaStarted = true;
+#if CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
+      otaLogRunningPartitionState();
+      otaBootVerifyMarkValidIfPending();
+#endif
+    }
   }
 
   maybeLogPendingTime();

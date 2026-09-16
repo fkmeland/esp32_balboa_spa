@@ -1791,9 +1791,13 @@ static unsigned long statusSnapshotAgeSec()
 /** One-line subtitle: relative age + gateway-local time of last bus status apply. */
 static String statusSnapshotSubtitle()
 {
-  if (spaStatusData.lastUpdate == 0)
+  if (!spaHasFreshStatus())
   {
     return String("No spa status yet");
+  }
+  if (spaStatusData.lastUpdate == 0)
+  {
+    return String("Time not synced");
   }
   const String human = statusLastUpdateDisplayHtml(spaStatusData.lastUpdate);
   const unsigned long age = statusSnapshotAgeSec();
@@ -1880,7 +1884,7 @@ static String statusGatewayLocalTimeHHMM()
 
 static bool statusSpaConfigReady()
 {
-  return spaConfigurationData.lastUpdate != 0;
+  return spaConfigurationData.lastUpdateMs != 0;
 }
 
 /** Configuration 0x2E: pump two-bit 0 = None (not installed). */
@@ -2829,12 +2833,12 @@ void handleConfig(AsyncWebServerRequest *request)
   }
   html += "<dl class=\"config-kv\">";
   html += "<div class=\"kv-row\"><dt>lastUpdate</dt><dd id='cfgFilterLastUpdate'>" + statusLastUpdateDisplayHtml(spaFilterSettingsData.lastUpdate) + "</dd></div>";
-  if (spaFilterSettingsData.lastUpdate != 0)
+  if (spaFilterSettingsData.lastUpdateMs != 0)
   {
     html += "<div class=\"kv-row\"><dt>Filter 2 enabled</dt><dd id='cfgFilter2Enabled'>" + String(spaFilterSettingsData.filt2Enable ? "yes" : "no") + "</dd></div>";
   }
   html += "</dl>";
-  if (spaFilterSettingsData.lastUpdate != 0)
+  if (spaFilterSettingsData.lastUpdateMs != 0)
   {
     html += "<details><summary><b>Raw filter-settings frame (hex)</b></summary><pre class=\"config-hex\" id='cfgFilterRawHex'>" +
             spaHexWordsUpper(spaFilterSettingsData.rawData, spaFilterSettingsData.rawDataLength, 48) + "</pre></details>";
@@ -2849,7 +2853,7 @@ void handleConfig(AsyncWebServerRequest *request)
   html += "<p style=\"margin:0 0 8px 0;font-size:14px\">Controls whether the topside panel shows scheduled messages "
           "(Clean Filter, Check pH, Change Water, etc.). This is the same <strong>Reminders</strong> setting on the spa settings menu.</p>";
   html += "<dl class=\"config-kv\" style=\"margin:0 0 10px 0\"><div class=\"kv-row\"><dt>Current</dt><dd id=\"cfgPrefsRemindersVal\">";
-  if (spaPreferencesData.lastUpdate == 0)
+  if (spaPreferencesData.lastUpdateMs == 0)
   {
     html += "<em>Not received yet</em>";
   }
@@ -2860,24 +2864,24 @@ void handleConfig(AsyncWebServerRequest *request)
   html += "</dd></div></dl>";
   html += "<div class=\"config-backup-actions\" style=\"margin:0\">";
   html += "<button class=\"equip-btn\" type=\"button\" id=\"cfgPrefsRemindersOnBtn\"";
-  if (spaPreferencesData.lastUpdate == 0 || spaPreferencesRemindersEnabled(spaPreferencesData.reminders))
+  if (spaPreferencesData.lastUpdateMs == 0 || spaPreferencesRemindersEnabled(spaPreferencesData.reminders))
   {
     html += " disabled";
   }
   html += ">Turn reminders on</button>";
   html += "<button class=\"equip-btn\" type=\"button\" id=\"cfgPrefsRemindersOffBtn\"";
-  if (spaPreferencesData.lastUpdate == 0 || !spaPreferencesRemindersEnabled(spaPreferencesData.reminders))
+  if (spaPreferencesData.lastUpdateMs == 0 || !spaPreferencesRemindersEnabled(spaPreferencesData.reminders))
   {
     html += " disabled";
   }
   html += ">Turn reminders off</button></div>";
   html += "<p id=\"cfgPrefsRemindersStatus\" class=\"chart-caption\" style=\"margin:8px 0 0 0\">";
-  if (spaPreferencesData.lastUpdate == 0)
+  if (spaPreferencesData.lastUpdateMs == 0)
   {
     html += "Waiting for preferences from the spa controller (requested automatically after connect).";
   }
   html += "</p></div>";
-  if (spaPreferencesData.lastUpdate == 0)
+  if (spaPreferencesData.lastUpdateMs == 0)
   {
     html += "</section>";
   }
@@ -2908,7 +2912,7 @@ void handleConfig(AsyncWebServerRequest *request)
   html += "<p class=\"chart-caption\" style=\"margin:0 0 12px 0\">Historical events stored on the spa pack (Balboa fault log). "
           "This is not live equipment state on <a href='/status'>Spa Status</a>, and not the ESP gateway diagnostic ring on "
           "<a href='/state'>ESP State</a> / <code>GET /api/diagnostics</code> &rarr; <code>faultLog</code>.</p>";
-  if (spaFaultLogData.lastUpdate == 0)
+  if (spaFaultLogData.lastUpdateMs == 0)
   {
     html += "<p style=\"margin:0\"><em>Latest event not received yet.</em> The gateway requests this after startup.</p>";
   }
@@ -2953,7 +2957,7 @@ void handleConfig(AsyncWebServerRequest *request)
   }
   html += "<details style=\"margin-top:12px\"><summary><b>Developer: undecoded settings (0x04)</b></summary>";
   html += "<p class=\"chart-caption\" style=\"margin:8px 0\">Raw Balboa settings sub-block; not decoded for display yet.</p>";
-  if (spaSettings0x04Data.lastUpdate == 0)
+  if (spaSettings0x04Data.lastUpdateMs == 0)
   {
     html += "<p style=\"margin:0\"><em>Not received yet.</em></p>";
   }
@@ -3473,6 +3477,7 @@ static void fillStatusSnapshotDoc(DynamicJsonDocument &doc)
   doc["heatingState"] = spaStatusData.heatingState;
   doc["heatingStateText"] = getMapDescription(spaStatusData.heatingState, heatingStateMap);
   doc["needsHeat"] = spaStatusData.needsHeat ? 1 : 0;
+  doc["currentTemp"] = spaStatusData.currentTemp;
   doc["highSetTemp"] = spaStatusData.highSetTemp;
   doc["lowSetTemp"] = spaStatusData.lowSetTemp;
   doc["setTemp"] = spaStatusData.setTemp;
@@ -4416,7 +4421,7 @@ void handleConfigFaultLogHistoryPost(AsyncWebServerRequest *request)
     out["accepted"] = false;
     out["reason"] = "history_scan_active";
   }
-  else if (spaFaultLogData.lastUpdate == 0)
+  else if (spaFaultLogData.lastUpdateMs == 0)
   {
     out["accepted"] = false;
     out["reason"] = "fault_log_not_ready";

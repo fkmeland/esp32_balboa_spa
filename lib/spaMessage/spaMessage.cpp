@@ -247,6 +247,7 @@ static void spaFaultLogHistoryApplyLatest(u_int8_t *message, int length, uint8_t
 {
   spaFaultLogData.crc = message[message[1]];
   spaFaultLogData.lastUpdate = getTime();
+  spaFaultLogData.lastUpdateMs = millis();
   for (int i = 0; i < length && i < BALBOA_MESSAGE_SIZE; i++)
   {
     spaFaultLogData.rawData[i] = message[i];
@@ -301,7 +302,7 @@ void spaMessageLoop()
     if (xQueueReceive(spaReadQueue, &message, 0) == pdTRUE)
     {
       esp_task_wdt_reset();
-      // Log.verbose(F("[Mess]: Queue Message Received: [%d]%s" CR), message->length, msgToString(message->message, message->length).c_str());
+      Log.verbose(F("[Mess]: Dequeued type 0x%02x, len %d" CR), message->message[4], message->length);
 #if defined(LOCAL_CONNECT) || defined(BRIDGE)
       if (message->message[2] == id || message->message[2] == 0xff)
       {
@@ -494,6 +495,7 @@ void parsePreferencesResponse(u_int8_t *message, int length)
 {
   spaPreferencesData.crc = message[message[1]];
   spaPreferencesData.lastUpdate = getTime();
+  spaPreferencesData.lastUpdateMs = millis();
   spaPreferencesData.rawDataLength = length;
   for (int i = 0; i < length && i < BALBOA_MESSAGE_SIZE; i++)
   {
@@ -539,6 +541,7 @@ void parseWiFiModuleConfigurationResponse(u_int8_t *message, int length)
 {
   wiFiModuleConfigurationData.crc = message[message[1]];
   wiFiModuleConfigurationData.lastUpdate = getTime();
+  wiFiModuleConfigurationData.lastUpdateMs = millis();
 
   u_int8_t *hexArray = message + 5;
 
@@ -576,6 +579,7 @@ void parseConfigurationResponse(u_int8_t *message, int length)
 {
   spaConfigurationData.crc = message[message[1]];
   spaConfigurationData.lastUpdate = getTime();
+  spaConfigurationData.lastUpdateMs = millis();
 
   for (int i = 0; i < length && i < BALBOA_MESSAGE_SIZE; i++)
   {
@@ -639,6 +643,7 @@ void parseInformationResponse(u_int8_t *message, int length)
 
   spaInformationData.crc = message[message[1]];
   spaInformationData.lastUpdate = getTime();
+  spaInformationData.lastUpdateMs = millis();
   for (int i = 0; i < length && i < BALBOA_MESSAGE_SIZE; i++)
   {
     spaInformationData.rawData[i] = message[i];
@@ -697,6 +702,7 @@ bool parseStatusMessage(u_int8_t *message, int length)
     spaStatusData.rawData[0] = message[0];
     spaStatusData.crc = message[message[1]];
     spaStatusData.lastUpdate = getTime();
+    spaStatusData.lastUpdateMs = millis();
     for (int i = 0; i < length && i < BALBOA_MESSAGE_SIZE; i++)
     {
       spaStatusData.rawData[i] = message[i];
@@ -798,6 +804,7 @@ void parseFilterResponse(u_int8_t *message, int length)
 {
   spaFilterSettingsData.crc = message[message[1]];
   spaFilterSettingsData.lastUpdate = getTime();
+  spaFilterSettingsData.lastUpdateMs = millis();
   for (int i = 0; i < length && i < BALBOA_MESSAGE_SIZE; i++)
   {
     spaFilterSettingsData.rawData[i] = message[i];
@@ -824,6 +831,7 @@ void parseSettings0x04Response(u_int8_t *message, int length)
 {
   spaSettings0x04Data.crc = message[message[1]];
   spaSettings0x04Data.lastUpdate = getTime();
+  spaSettings0x04Data.lastUpdateMs = millis();
   for (int i = 0; i < length && i < BALBOA_MESSAGE_SIZE; i++)
   {
     spaSettings0x04Data.rawData[i] = message[i];

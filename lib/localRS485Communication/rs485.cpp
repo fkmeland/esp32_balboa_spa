@@ -538,7 +538,7 @@ void rs485ProcessByte(uint8_t x, uint8_t uartAvailable)
         }
         else
         {
-          // Log.verbose(F("[rs485]: Data added to Read Queue [%d]%s" CR), messageToSend->length, msgToString(messageToSend->message, messageToSend->length).c_str());
+          Log.verbose(F("[rs485]: Data added to Read Queue [%d]%s" CR), messageToSend->length, msgToString(messageToSend->message, messageToSend->length).c_str());
         }
       }
     }
@@ -762,8 +762,10 @@ void applyRs485Polarity(bool inverted)
   rs485Stats.polarityInverted = rs485PolarityInverted ? 1 : 0;
 
   RS485_SERIAL_PORT.end();
+  RS485_SERIAL_PORT.setRxBufferSize(4096);
   RS485_SERIAL_PORT.begin(RS485_BAUD_RATE, SERIAL_8N1, TX485_Rx, TX485_Tx);
 #if defined(ARDUINO_ARCH_ESP32)
+  RS485_SERIAL_PORT.setRxFIFOFull(32); // Lower hardware FIFO threshold to give CPU more time before 128-byte overflow
   RS485_SERIAL_PORT.setRxInvert(rs485PolarityInverted);
   if (rs485PolarityInverted)
   {
