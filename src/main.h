@@ -16,7 +16,7 @@
 
 // GitHub links for web /state + GET /api/version (optional overrides in src/config.h).
 #ifndef FIRMWARE_REPO_OWNER
-#define FIRMWARE_REPO_OWNER "shomanjk"
+#define FIRMWARE_REPO_OWNER "fkmeland"
 #endif
 #ifndef FIRMWARE_REPO_NAME
 #define FIRMWARE_REPO_NAME "esp32_balboa_spa"

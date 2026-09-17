@@ -3029,7 +3029,7 @@ void handleState(AsyncWebServerRequest *request)
   html += "<div class='sys-hero__time'><span class='fw-compare-label'>Current time</span>"
           "<div class='sys-hero__time-val'>" + webWallClockDisplayHtml(getTime()) + "</div></div>";
 #ifdef LOCAL_CLIENT
-  html += "<div class='sys-hero__rs485'><span class='fw-compare-label'>RS485</span>"
+  html += "<div class='sys-hero__rs485'><span class='fw-compare-label'>Balboa Protocol</span>"
           "<div style='margin-top:4px'><span class='diag-badge' style='font-weight:700;color:#fff;background:" + rs485HealthColor(rsHealth) + "'>" + rs485HealthLabel(rsHealth) + "</span></div></div>";
 #endif
   html += "</div>";
@@ -3283,7 +3283,7 @@ void handleLogsPage(AsyncWebServerRequest *request)
   html += F("<main id='mainContent'><section class='panel logs-panel'><div class='logs-stack'><h1>Device logs</h1>");
   html += "<p style='color:var(--muted);font-size:14px;margin-top:0'>Recent lines are buffered on the gateway; include/exclude filters run in the browser. Logs are teed to USB <code>Serial</code> (monitor baud) and this ring. For a live tail without USB, use this page or <code>GET /api/logs</code> (optional WebSocket tail). If the firmware was built with <code>TELNET_LOG</code>, <code>TelnetStream</code> also listens on TCP port 23; the global logger is <em>not</em> switched to Telnet (see Wi‑Fi boot messages).</p>";
 
-  html += "<div class='preset-row'><button type='button' id='pAll'>All</button><button type='button' id='pErr'>Errors only</button><button type='button' id='pRs'>RS485</button><button type='button' id='pBridge'>BridgeDiag</button><button type='button' id='pWifi'>WiFi</button></div>";
+  html += "<div class='preset-row'><button type='button' id='pAll'>All</button><button type='button' id='pErr'>Errors only</button><button type='button' id='pRs'>Balboa</button><button type='button' id='pBridge'>BridgeDiag</button><button type='button' id='pWifi'>WiFi</button></div>";
   html += "<div class='log-controls'><label>Level <select id='lvl'><option value='0'>SILENT</option><option value='1'>FATAL</option><option value='2'>ERROR</option><option value='3'>WARNING</option><option value='4'>INFO/NOTICE</option><option value='5'>TRACE</option><option value='6'>VERBOSE</option></select></label>";
   html += "<button type='button' id='applyLvl'>Apply level</button>";
   html += "<label>Include <input type='text' id='fInc' placeholder='substring' autocapitalize='off' autocomplete='off'/></label>";

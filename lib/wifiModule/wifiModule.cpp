@@ -7,6 +7,7 @@
 #include <esp_task_wdt.h>
 #include <TelnetStream.h>
 #include <time.h>
+#include <esp_sntp.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -275,11 +276,17 @@ static void onWifiArduinoEvent(WiFiEvent_t event, WiFiEventInfo_t info)
   }
 }
 
+static void time_sync_notification_cb(struct timeval *tv)
+{
+  Log.notice(F("[WiFi]: NTP time successfully synchronized via SNTP!" CR));
+}
+
 static void applyConnectedSideEffects()
 {
   if (!wifiNtpConfigured)
   {
-    configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org");
+    sntp_set_time_sync_notification_cb(time_sync_notification_cb);
+    configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org", "time.nist.gov", "time.google.com");
     wifiNtpConfigured = true;
   }
 
