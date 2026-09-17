@@ -1795,7 +1795,7 @@ static String statusSnapshotSubtitle()
   {
     return String("No spa status yet");
   }
-  if (spaStatusData.lastUpdate == 0)
+  if (spaStatusData.lastUpdateMs == 0)
   {
     return String("Time not synced");
   }

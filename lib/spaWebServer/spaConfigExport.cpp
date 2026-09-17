@@ -100,7 +100,7 @@ void appendFailed(JsonObject report, const char *section, const char *reason)
 
 void spaConfigAppendFilterGetJson(JsonObject root)
 {
-  const bool ready = spaFilterSettingsData.lastUpdate != 0;
+  const bool ready = spaFilterSettingsData.lastUpdateMs != 0;
   root["ready"] = ready;
   root["lastUpdate"] = static_cast<long>(spaFilterSettingsData.lastUpdate);
   if (spaHasFreshStatus() && spaStatusData.time[0] != '\0')
@@ -122,7 +122,7 @@ void spaConfigAppendFilterGetJson(JsonObject root)
 
 void spaConfigAppendPreferencesGetJson(JsonObject root)
 {
-  const bool ready = spaPreferencesData.lastUpdate != 0;
+  const bool ready = spaPreferencesData.lastUpdateMs != 0;
   root["ready"] = ready;
   root["lastUpdate"] = static_cast<long>(spaPreferencesData.lastUpdate);
   root["reminders"] = spaPreferencesData.reminders;
@@ -186,7 +186,7 @@ void appendFaultLogHistoryEntriesJson(JsonObject root)
 
 void spaConfigAppendFaultLogGetJson(JsonObject root)
 {
-  const bool ready = spaFaultLogData.lastUpdate != 0;
+  const bool ready = spaFaultLogData.lastUpdateMs != 0;
   root["ready"] = ready;
   root["lastUpdate"] = static_cast<long>(spaFaultLogData.lastUpdate);
   if (!ready)
@@ -230,16 +230,16 @@ void spaConfigAppendExportJson(JsonObject root)
   }
 
   JsonObject readiness = root.createNestedObject("readiness");
-  readiness["filter"] = spaFilterSettingsData.lastUpdate != 0;
-  readiness["information"] = spaInformationData.lastUpdate != 0;
-  readiness["configuration"] = spaConfigurationData.lastUpdate != 0;
-  readiness["preferences"] = spaPreferencesData.lastUpdate != 0;
-  readiness["settings0x04"] = spaSettings0x04Data.lastUpdate != 0;
-  readiness["faultLog"] = spaFaultLogData.lastUpdate != 0;
-  readiness["status"] = spaStatusData.lastUpdate != 0;
+  readiness["filter"] = spaFilterSettingsData.lastUpdateMs != 0;
+  readiness["information"] = spaInformationData.lastUpdateMs != 0;
+  readiness["configuration"] = spaConfigurationData.lastUpdateMs != 0;
+  readiness["preferences"] = spaPreferencesData.lastUpdateMs != 0;
+  readiness["settings0x04"] = spaSettings0x04Data.lastUpdateMs != 0;
+  readiness["faultLog"] = spaFaultLogData.lastUpdateMs != 0;
+  readiness["status"] = spaStatusData.lastUpdateMs != 0;
 
   JsonObject writable = root.createNestedObject("writable");
-  if (spaFilterSettingsData.lastUpdate != 0)
+  if (spaFilterSettingsData.lastUpdateMs != 0)
   {
     JsonObject filter = writable.createNestedObject("filter");
     JsonObject f1 = filter.createNestedObject("filter1");
@@ -268,7 +268,7 @@ void spaConfigAppendExportJson(JsonObject root)
   }
 
   JsonObject snapshot = root.createNestedObject("snapshot");
-  if (spaInformationData.lastUpdate != 0)
+  if (spaInformationData.lastUpdateMs != 0)
   {
     JsonObject info = snapshot.createNestedObject("information");
     info["softwareID"] = trimField(spaInformationData.softwareID);
@@ -279,7 +279,7 @@ void spaConfigAppendExportJson(JsonObject root)
     info["heaterType"] = spaInformationData.heaterType;
     info["rawHex"] = rawFrameHexUpper(spaInformationData.rawData, spaInformationData.rawDataLength);
   }
-  if (spaConfigurationData.lastUpdate != 0)
+  if (spaConfigurationData.lastUpdateMs != 0)
   {
     JsonObject cfg = snapshot.createNestedObject("configuration");
     cfg["pump1"] = spaConfigurationData.pump1;
@@ -292,7 +292,7 @@ void spaConfigAppendExportJson(JsonObject root)
     cfg["light2"] = spaConfigurationData.light2;
     cfg["rawHex"] = rawFrameHexUpper(spaConfigurationData.rawData, spaConfigurationData.rawDataLength);
   }
-  if (spaPreferencesData.lastUpdate != 0)
+  if (spaPreferencesData.lastUpdateMs != 0)
   {
     JsonObject prefs = snapshot.createNestedObject("preferences");
     prefs["reminders"] = spaPreferencesData.reminders;
@@ -301,12 +301,12 @@ void spaConfigAppendExportJson(JsonObject root)
     prefs["cleanupCycle"] = spaPreferencesData.cleanupCycle;
     prefs["rawHex"] = rawFrameHexUpper(spaPreferencesData.rawData, spaPreferencesData.rawDataLength);
   }
-  if (spaSettings0x04Data.lastUpdate != 0)
+  if (spaSettings0x04Data.lastUpdateMs != 0)
   {
     JsonObject s04 = snapshot.createNestedObject("settings0x04");
     s04["rawHex"] = rawFrameHexUpper(spaSettings0x04Data.rawData, spaSettings0x04Data.rawDataLength);
   }
-  if (spaFaultLogData.lastUpdate != 0)
+  if (spaFaultLogData.lastUpdateMs != 0)
   {
     JsonObject fault = snapshot.createNestedObject("faultLog");
     fault["faultCode"] = spaFaultLogData.faultCode;
@@ -349,7 +349,7 @@ bool spaConfigImportFromJson(const JsonDocument &doc, JsonObject report, bool dr
   {
     snapInfo = doc["snapshot"]["information"];
   }
-  if (!snapInfo.isNull() && spaInformationData.lastUpdate != 0)
+  if (!snapInfo.isNull() && spaInformationData.lastUpdateMs != 0)
   {
     const String fileModel = snapInfo["model"] | "";
     const String fileSig = snapInfo["configurationSignature"] | "";
