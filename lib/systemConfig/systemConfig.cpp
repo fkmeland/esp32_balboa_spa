@@ -43,6 +43,11 @@ void loadSystemConfig() {
         systemConfig.timezone = doc["timezone"].as<String>();
     }
 
+    // Apply timezone immediately so that RTC time on soft reboot uses the correct offset
+    // before Wi-Fi / NTP syncs (fixing 2-hour shift on reboot).
+    setenv("TZ", systemConfig.timezone.length() > 0 ? systemConfig.timezone.c_str() : "CET-1CEST,M3.5.0,M10.5.0/3", 1);
+    tzset();
+
     Log.notice(F("[SysCfg]: Loaded config - commMode: %s, timezone: %s" CR), 
                systemConfig.commMode.c_str(), systemConfig.timezone.c_str());
 }
@@ -70,6 +75,11 @@ bool saveSystemConfig() {
     }
     
     file.close();
+
+    // Apply new timezone immediately
+    setenv("TZ", systemConfig.timezone.length() > 0 ? systemConfig.timezone.c_str() : "CET-1CEST,M3.5.0,M10.5.0/3", 1);
+    tzset();
+
     Log.notice(F("[SysCfg]: Config saved successfully" CR));
     return true;
 }
