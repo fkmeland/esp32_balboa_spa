@@ -2190,23 +2190,23 @@ static void appendStatusControlCellPump(HtmlOut &html, const char *label, const 
     html += "\">";
     
     if (cfg == 2) {
-       html += "<button class=\"equip-btn\" type=\"button\" data-button=\"";
+       html += "<button class=\"equip-btn\" style=\"min-width:0; padding:6px 14px; margin-right:4px;\" type=\"button\" data-button=\"";
        html += String(buttonCode);
-       html += "\" data-state=\"off\" onclick=\"statusSendButton(this)\"";
+       html += "\" data-state=\"off\" title=\"Turn Off\" onclick=\"statusSendButton(this)\"";
        if (rawState == 0) html += " disabled";
-       html += ">Off</button>";
+       html += ">&#x23FB;</button>";
 
-       html += "<button class=\"equip-btn\" type=\"button\" data-button=\"";
+       html += "<button class=\"equip-btn\" style=\"min-width:0; padding:6px 14px; margin-right:4px;\" type=\"button\" data-button=\"";
        html += String(buttonCode);
-       html += "\" data-state=\"low\" onclick=\"statusSendButton(this)\"";
+       html += "\" data-state=\"low\" title=\"Low Speed\" onclick=\"statusSendButton(this)\"";
        if (rawState == 1) html += " disabled";
-       html += ">Low</button>";
+       html += ">1</button>";
 
-       html += "<button class=\"equip-btn\" type=\"button\" data-button=\"";
+       html += "<button class=\"equip-btn\" style=\"min-width:0; padding:6px 14px;\" type=\"button\" data-button=\"";
        html += String(buttonCode);
-       html += "\" data-state=\"high\" onclick=\"statusSendButton(this)\"";
+       html += "\" data-state=\"high\" title=\"High Speed\" onclick=\"statusSendButton(this)\"";
        if (rawState == 2) html += " disabled";
-       html += ">High</button>";
+       html += ">2</button>";
     } else {
        html += "<button class=\"equip-btn\" type=\"button\" data-button=\"";
        html += String(buttonCode);
