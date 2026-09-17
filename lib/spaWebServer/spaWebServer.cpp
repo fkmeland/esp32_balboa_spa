@@ -2931,27 +2931,6 @@ void handleConfig(AsyncWebServerRequest *request)
     html += "</section>";
   }
 
-  html += "<section class='panel' id='cfg-system'><h1>System configuration</h1>"
-          "<div class=\"config-filter-card\" style=\"margin-bottom:15px\"><h2>Gateway Settings</h2>"
-          "<div class=\"config-filter-fields\">"
-          "<label style=\"display:flex;align-items:center;gap:10px;\">Communication Mode:"
-          "<select id=\"cfgCommMode\">"
-          "<option value=\"rs485\">RS485 (DE/RE toggling)</option>"
-          "<option value=\"ttl\">Direct Serial TTL</option>"
-          "</select></label>"
-          "<label style=\"display:flex;align-items:center;gap:10px;margin-top:10px;\">Timezone:"
-          "<select id=\"cfgTimezone\">"
-          "<option value=\"CET-1CEST,M3.5.0,M10.5.0/3\">Europe/Oslo (CET/CEST)</option>"
-          "<option value=\"GMT0BST,M3.5.0/1,M10.5.0\">Europe/London (GMT/BST)</option>"
-          "<option value=\"EST5EDT,M3.2.0,M11.1.0\">US/Eastern (EST/EDT)</option>"
-          "<option value=\"CST6CDT,M3.2.0,M11.1.0\">US/Central (CST/CDT)</option>"
-          "<option value=\"MST7MDT,M3.2.0,M11.1.0\">US/Mountain (MST/MDT)</option>"
-          "<option value=\"PST8PDT,M3.2.0,M11.1.0\">US/Pacific (PST/PDT)</option>"
-          "<option value=\"AEST-10AEDT,M10.1.0,M4.1.0/3\">Australia/Sydney (AEST/AEDT)</option>"
-          "</select></label>"
-          "<div style=\"margin-top:15px;\"><button class='equip-btn' type='button' id='cfgSystemSaveBtn'>Save & Restart</button></div>"
-          "</div></div></section>";
-
   html += "<section class='panel config-span-full' id='cfg-history'><h1>Spa controller history</h1>";
   html += "<p class=\"chart-caption\" style=\"margin:0 0 12px 0\">Historical events stored on the spa pack (Balboa fault log). "
           "This is not live equipment state on <a href='/status'>Spa Status</a>, and not the ESP gateway diagnostic ring on "
@@ -3014,6 +2993,27 @@ void handleConfig(AsyncWebServerRequest *request)
             spaHexWordsUpper(spaSettings0x04Data.rawData, spaSettings0x04Data.rawDataLength, 48) + "</pre>";
   }
   html += "</details></section>";
+
+  html += "<section class='panel' id='cfg-system'><h1>System configuration</h1>"
+          "<div class=\"config-filter-card\" style=\"margin-bottom:15px\"><h2>Gateway Settings</h2>"
+          "<div class=\"config-filter-fields\">"
+          "<label style=\"display:flex;align-items:center;gap:10px;\">Communication Mode:"
+          "<select id=\"cfgCommMode\">"
+          "<option value=\"rs485\">RS485 (DE/RE toggling)</option>"
+          "<option value=\"ttl\">Direct Serial TTL</option>"
+          "</select></label>"
+          "<label style=\"display:flex;align-items:center;gap:10px;margin-top:10px;\">Timezone:"
+          "<select id=\"cfgTimezone\">"
+          "<option value=\"CET-1CEST,M3.5.0,M10.5.0/3\">Europe/Oslo (CET/CEST)</option>"
+          "<option value=\"GMT0BST,M3.5.0/1,M10.5.0\">Europe/London (GMT/BST)</option>"
+          "<option value=\"EST5EDT,M3.2.0,M11.1.0\">US/Eastern (EST/EDT)</option>"
+          "<option value=\"CST6CDT,M3.2.0,M11.1.0\">US/Central (CST/CDT)</option>"
+          "<option value=\"MST7MDT,M3.2.0,M11.1.0\">US/Mountain (MST/MDT)</option>"
+          "<option value=\"PST8PDT,M3.2.0,M11.1.0\">US/Pacific (PST/PDT)</option>"
+          "<option value=\"AEST-10AEDT,M10.1.0,M4.1.0/3\">Australia/Sydney (AEST/AEDT)</option>"
+          "</select></label>"
+          "<div style=\"margin-top:15px;\"><button class='equip-btn' type='button' id='cfgSystemSaveBtn'>Save & Restart</button></div>"
+          "</div></div></section>";
 
   html += "<section class='panel' id='cfg-littlefs'><h1>LittleFS configuration</h1>";
   html += "<p class='chart-caption'>Load on demand to avoid large payloads on weak links.</p>";
