@@ -329,6 +329,9 @@ static void applyConnectedSideEffects()
 #endif
 }
 
+static unsigned long lastNtpRetryMs = 0;
+static uint8_t ntpRetryCount = 0;
+
 static void maybeLogPendingTime()
 {
   if (wifiTimeLogged || WiFi.status() != WL_CONNECTED)
@@ -342,6 +345,22 @@ static void maybeLogPendingTime()
     strftime(timeCharArray, sizeof(timeCharArray), "%Y-%m-%d %H:%M:%S", &timeinfo);
     Log.notice(F("[WiFi]: Time: %s" CR), timeCharArray);
     wifiTimeLogged = true;
+    return;
+  }
+
+  unsigned long now = millis();
+  if (lastNtpRetryMs == 0)
+  {
+    lastNtpRetryMs = now;
+  }
+  else if (now - lastNtpRetryMs > 30000UL)
+  {
+    lastNtpRetryMs = now;
+    ntpRetryCount++;
+    Log.warning(F("[WiFi]: NTP not synced yet (retry %d), re-arming SNTP..." CR), ntpRetryCount);
+    sntp_stop();
+    sntp_set_time_sync_notification_cb(time_sync_notification_cb);
+    configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org", "time.nist.gov", "time.google.com");
   }
 }
 
