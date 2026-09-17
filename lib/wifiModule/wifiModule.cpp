@@ -286,7 +286,11 @@ static void applyConnectedSideEffects()
   if (!wifiNtpConfigured)
   {
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
-    configTzTime("CET-1CEST,M3.5.0,M10.5.0/3", "pool.ntp.org", "time.nist.gov", "time.google.com");
+#ifdef WIFI_TZ_INFO
+    configTzTime(WIFI_TZ_INFO, "pool.ntp.org", "time.nist.gov", "time.google.com");
+#else
+    configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org", "time.nist.gov", "time.google.com");
+#endif
     wifiNtpConfigured = true;
   }
 
@@ -329,9 +333,6 @@ static void applyConnectedSideEffects()
 #endif
 }
 
-static unsigned long lastNtpRetryMs = 0;
-static uint8_t ntpRetryCount = 0;
-
 static void maybeLogPendingTime()
 {
   if (wifiTimeLogged || WiFi.status() != WL_CONNECTED)
@@ -346,21 +347,6 @@ static void maybeLogPendingTime()
     Log.notice(F("[WiFi]: Time: %s" CR), timeCharArray);
     wifiTimeLogged = true;
     return;
-  }
-
-  unsigned long now = millis();
-  if (lastNtpRetryMs == 0)
-  {
-    lastNtpRetryMs = now;
-  }
-  else if (now - lastNtpRetryMs > 30000UL)
-  {
-    lastNtpRetryMs = now;
-    ntpRetryCount++;
-    Log.warning(F("[WiFi]: NTP not synced yet (retry %d), re-arming SNTP..." CR), ntpRetryCount);
-    sntp_stop();
-    sntp_set_time_sync_notification_cb(time_sync_notification_cb);
-    configTzTime("CET-1CEST,M3.5.0,M10.5.0/3", "pool.ntp.org", "time.nist.gov", "time.google.com");
   }
 }
 
