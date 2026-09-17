@@ -154,6 +154,21 @@ int spaPumpToggleCountForSpeed(uint8_t pumpId, uint8_t desiredSpeed)
   {
     return -1;
   }
+
+  // Handle circulation override for Pump 1 without a dedicated circ pump
+  if (pumpId == 1 && !spaConfigurationData.circulationPump && speedConfig == 2)
+  {
+    bool circOverride = (spaStatusData.heatingState == 1 || spaStatusData.heatingState == 2 || spaStatusData.filterMode > 0);
+    if (circOverride)
+    {
+      // The cycle is truncated to Low (1) -> High (2) -> Low (1). The Off (0) state is skipped.
+      if (state == 2 && desiredSpeed == 1) return 1; // High -> Low (1 toggle)
+      if (state == 2 && desiredSpeed == 0) return 1; // High -> Off (actually goes to Low, 1 toggle)
+      if (state == 1 && desiredSpeed == 2) return 1; // Low -> High (1 toggle)
+      if (state == 1 && desiredSpeed == 0) return 0; // Low -> Off (impossible, do nothing)
+    }
+  }
+
   const int delta = ((int)desiredSpeed - (int)state + 3) % 3;
   return delta;
 }
