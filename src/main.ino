@@ -16,6 +16,7 @@
 #include <rs485.h>
 #include <bridge.h>
 #include <spaEpaper.h>
+#include <systemConfig.h>
 #ifdef M5_STATUS_LED
 #include <led_control.h>
 #endif
@@ -110,6 +111,9 @@ void setup()
   //  Log.verbose(F("Flash chip speed: %d Hz" CR), ESP.getFlashChipSpeed());
   Log.verbose(F("CPU frequency: %d Hz" CR), ESP.getCpuFreqMHz());
   Log.verbose(F("SDK version: %s" CR), ESP.getSdkVersion());
+
+  logSection("System Config");
+  loadSystemConfig();
 
   logSection("Wifi Module Setup");
 #ifdef M5_STATUS_LED

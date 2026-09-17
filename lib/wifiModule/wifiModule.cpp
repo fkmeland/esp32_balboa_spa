@@ -1,6 +1,7 @@
 #include "wifiModule.h"
 #include <WiFi.h>
 #include <WiFiManager.h>
+#include <systemConfig.h>
 #include <ArduinoOTA.h>
 #include <ArduinoLog.h>
 #include <esp_ota_ops.h>
@@ -286,7 +287,8 @@ static void applyConnectedSideEffects()
   if (!wifiNtpConfigured)
   {
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
-    configTzTime(WIFI_TZ_INFO, "pool.ntp.org", "time.nist.gov", "time.google.com");
+    const char* tz = systemConfig.timezone.length() > 0 ? systemConfig.timezone.c_str() : WIFI_TZ_INFO;
+    configTzTime(tz, "pool.ntp.org", "time.nist.gov", "time.google.com");
     wifiNtpConfigured = true;
   }
 
@@ -362,7 +364,8 @@ static void maybeLogPendingTime()
     }
     sntp_stop();
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
-    configTzTime(WIFI_TZ_INFO, "pool.ntp.org", "time.nist.gov", "time.google.com");
+    const char* tz = systemConfig.timezone.length() > 0 ? systemConfig.timezone.c_str() : WIFI_TZ_INFO;
+    configTzTime(tz, "pool.ntp.org", "time.nist.gov", "time.google.com");
   }
 }
 

@@ -33,6 +33,10 @@
 #include <rs485.h>
 #include <mqttModule.h>
 #include <wifiModule.h>
+#include <bridge.h>
+#include <spaEpaper.h>
+#include <systemConfig.h>
+#include <TickTwo.h>
 #include "../../src/config.h"
 #include "../../src/main.h"
 #include "spaConfigExport.h"
@@ -71,6 +75,8 @@ void handleLogsPage(AsyncWebServerRequest *request);
 void handleLogsConfigGet(AsyncWebServerRequest *request);
 void handleLogsConfigPost(AsyncWebServerRequest *request);
 void handleConfigFilterGet(AsyncWebServerRequest *request);
+void handleConfigSystemGet(AsyncWebServerRequest *request);
+void handleConfigSystemPost(AsyncWebServerRequest *request);
 void handleConfigFilterPost(AsyncWebServerRequest *request);
 void handleConfigPreferencesGet(AsyncWebServerRequest *request);
 void handleConfigPreferencesPost(AsyncWebServerRequest *request);
@@ -1537,8 +1543,16 @@ void spaWebServerSetup()
   Log.verbose(F("[Web]: spaWebServerSetup()" CR));
 }
 
+static unsigned long s_systemRestartMs = 0;
+
 void spaWebServerLoop()
 {
+  if (s_systemRestartMs > 0 && millis() > s_systemRestartMs)
+  {
+    setLastRestartReason("System config saved");
+    ESP.restart();
+  }
+
   if (!serverSetup)
   {
     spaWebRegisterGet("/", handleStatus);
@@ -1564,6 +1578,8 @@ void spaWebServerLoop()
     spaWebRegisterGet("/api/logs", handleLogsApi);
     spaWebRegisterGet("/api/logs/config", handleLogsConfigGet);
     spaWebRegisterPostWithBody("/api/logs/config", handleLogsConfigPost);
+    spaWebRegisterGet("/api/config/system", handleConfigSystemGet);
+    spaWebRegisterPostWithBody("/api/config/system", handleConfigSystemPost);
     spaWebRegisterGet("/api/config/filter", handleConfigFilterGet);
     spaWebRegisterPostWithBody("/api/config/filter", handleConfigFilterPost);
     spaWebRegisterGet("/api/config/preferences", handleConfigPreferencesGet);
@@ -2713,6 +2729,7 @@ void handleConfig(AsyncWebServerRequest *request)
           "<li><a href='#cfg-backup'>Backup &amp; restore</a></li>"
           "<li><a href='#cfg-equipment'>Equipment wiring</a></li>"
           "<li><a href='#cfg-identity'>Controller identity</a></li>"
+          "<li><a href='#cfg-system'>System configuration</a></li>"
           "<li><a href='#cfg-filter'>Filter configuration</a></li>"
           "<li><a href='#cfg-preferences'>Panel preferences</a></li>"
           "<li><a href='#cfg-history'>Spa controller history</a></li>"
@@ -2797,6 +2814,20 @@ void handleConfig(AsyncWebServerRequest *request)
             spaHexWordsUpper(spaInformationData.rawData, spaInformationData.rawDataLength, 48) + "</pre></details>";
     html += "</section>";
   }
+
+  html += "<section class='panel' id='cfg-system'><h1>System configuration</h1>"
+          "<div class=\"config-filter-card\" style=\"margin-bottom:15px\"><h2>Gateway Settings</h2>"
+          "<div class=\"config-filter-fields\">"
+          "<label style=\"display:flex;align-items:center;gap:10px;\">Communication Mode:"
+          "<select id=\"cfgCommMode\">"
+          "<option value=\"rs485\">RS485 (DE/RE toggling)</option>"
+          "<option value=\"ttl\">Direct Serial TTL</option>"
+          "</select></label>"
+          "<label style=\"display:flex;align-items:center;gap:10px;margin-top:10px;\">Timezone (POSIX):"
+          "<input type=\"text\" id=\"cfgTimezone\" placeholder=\"CET-1CEST,M3.5.0,M10.5.0/3\" style=\"width:250px;\" />"
+          "</label>"
+          "<div style=\"margin-top:15px;\"><button class='equip-btn' type='button' id='cfgSystemSaveBtn'>Save & Restart</button></div>"
+          "</div></div></section>";
 
   html += "<section class='panel' id='cfg-filter'><h1>Filter configuration</h1>";
   {
@@ -4307,6 +4338,54 @@ void handleConfigFilterGet(AsyncWebServerRequest *request)
   String body;
   serializeJson(doc, body);
   request->send(200, "application/json", body);
+}
+
+void handleConfigSystemGet(AsyncWebServerRequest *request)
+{
+  DynamicJsonDocument doc(256);
+  doc["commMode"] = systemConfig.commMode;
+  doc["timezone"] = systemConfig.timezone;
+
+  String response;
+  serializeJson(doc, response);
+  request->send(200, "application/json", response);
+}
+
+void handleConfigSystemPost(AsyncWebServerRequest *request)
+{
+  if (request->_tempObject == nullptr)
+  {
+    request->send(400, "application/json", "{\"accepted\":false,\"reason\":\"no_body\"}");
+    return;
+  }
+  String *bodyPtr = (String *)request->_tempObject;
+  String body = *bodyPtr;
+  delete bodyPtr;
+  request->_tempObject = nullptr;
+
+  DynamicJsonDocument doc(256);
+  if (deserializeJson(doc, body))
+  {
+    request->send(400, "application/json", "{\"accepted\":false,\"reason\":\"bad_json\"}");
+    return;
+  }
+
+  if (doc.containsKey("commMode"))
+  {
+    systemConfig.commMode = doc["commMode"].as<String>();
+  }
+  if (doc.containsKey("timezone"))
+  {
+    systemConfig.timezone = doc["timezone"].as<String>();
+  }
+
+  saveSystemConfig();
+  
+  request->send(200, "application/json", "{\"accepted\":true}");
+  
+  // Schedule restart
+  s_systemRestartMs = millis() + 2000;
+  if (s_systemRestartMs == 0) s_systemRestartMs = 1; // Avoid 0
 }
 
 void handleConfigFilterPost(AsyncWebServerRequest *request)

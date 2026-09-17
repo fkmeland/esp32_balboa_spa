@@ -648,6 +648,19 @@ static const char kPortalConfigJs[] PROGMEM =
     "if(btn)btn.disabled=false;return;}cfgPollFaultHistory();}).catch(function(){if(st)st.textContent='Failed to start history load.';"
     "if(btn)btn.disabled=false;});}"
     "var fBtn=document.getElementById('cfgFaultHistoryLoadBtn');if(fBtn){fBtn.addEventListener('click',cfgLoadFaultHistory);}"
+    "var sysBtn=document.getElementById('cfgSystemSaveBtn');if(sysBtn){sysBtn.addEventListener('click',function(){"
+    "sysBtn.disabled=true;sysBtn.textContent='Saving...';"
+    "var cm=document.getElementById('cfgCommMode');var tz=document.getElementById('cfgTimezone');"
+    "fetch('/api/config/system',{method:'POST',headers:{'Content-Type':'application/json'},"
+    "body:JSON.stringify({commMode:cm?cm.value:'',timezone:tz?tz.value:''})}).then(function(r){if(!r.ok)throw new Error('http');"
+    "sysBtn.textContent='Restarting gateway...';setTimeout(function(){location.reload();},5000);"
+    "}).catch(function(){sysBtn.disabled=false;sysBtn.textContent='Save failed';});"
+    "});"
+    "fetch('/api/config/system',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){"
+    "var cm=document.getElementById('cfgCommMode');if(cm&&j.commMode)cm.value=j.commMode;"
+    "var tz=document.getElementById('cfgTimezone');if(tz&&j.timezone)tz.value=j.timezone;"
+    "}).catch(function(){});"
+    "}"
     "})();";
 
 static const char kPortalStateJs[] PROGMEM =

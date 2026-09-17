@@ -97,6 +97,8 @@ int rs485NextCtsFrameLength = 0;
 #ifndef RS485_UART_NUM
 #define RS485_UART_NUM UART_NUM_2
 #endif
+#include "spaEpaper.h"
+#include <systemConfig.h>
 
 #define RS_485_MAGIC_NUMBER 0x21345679
 #define RS485_POLARITY_DETECT_WINDOW_MS 15000
@@ -141,7 +143,7 @@ void rs485Setup()
     s_bootSafety.beginAttempted = 0;
   }
 
-  if (!AUTO_TX)
+  if (!(AUTO_TX || systemConfig.commMode == "ttl"))
   {
     // DE/RE GPIO only after UART pins are known safe; deferred until ensureUartBegun.
   }
@@ -272,7 +274,7 @@ bool rs485EnsureUartBegun()
     return false;
   }
 
-  if (!AUTO_TX)
+  if (!(AUTO_TX || systemConfig.commMode == "ttl"))
   {
     pinMode(TX485_Tx, OUTPUT);
     digitalWrite(TX485_Tx, LOW);
@@ -726,7 +728,7 @@ void rs485Write(CircularBuffer<uint8_t, BALBOA_MESSAGE_SIZE> &data)
     return;
   }
   // The following is not required for the new RS485 chip
-  if (AUTO_TX)
+  if (AUTO_TX || systemConfig.commMode == "ttl")
   {
   }
   else
@@ -740,7 +742,7 @@ void rs485Write(CircularBuffer<uint8_t, BALBOA_MESSAGE_SIZE> &data)
   RS485_SERIAL_PORT.flush();
   rs485LedNotifyTx();
 
-  if (AUTO_TX)
+  if (AUTO_TX || systemConfig.commMode == "ttl")
   {
   }
   else
@@ -826,7 +828,7 @@ int rs485Baud()
 
 bool rs485AutoTxEnabled()
 {
-  return AUTO_TX;
+  return AUTO_TX || systemConfig.commMode == "ttl";
 }
 
 void rs485RecordRawByte(uint8_t value, uint8_t uartAvailable)
