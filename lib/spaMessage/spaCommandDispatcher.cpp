@@ -156,9 +156,9 @@ int spaPumpToggleCountForSpeed(uint8_t pumpId, uint8_t desiredSpeed)
   }
 
   // Handle circulation override for Pump 1 without a dedicated circ pump
-  if (pumpId == 1 && !spaConfigurationData.circulationPump && speedConfig == 2)
+  if (pumpId == 1 && spaStatusData.circ == 0 && speedConfig == 2)
   {
-    bool circOverride = (spaStatusData.heatingState == 1 || spaStatusData.heatingState == 2 || spaStatusData.filterMode > 0);
+    bool circOverride = (spaStatusData.heatingState > 0 || spaStatusData.filterMode > 0 || spaStatusData.needsHeat);
     if (circOverride)
     {
       // The cycle is truncated to Low (1) -> High (2) -> Low (1). The Off (0) state is skipped.
