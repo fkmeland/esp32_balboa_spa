@@ -789,7 +789,7 @@ function setPreset(inc,exc){fInc.value=inc||'';fExc.value=exc||'';refreshFromRen
 function dl(name,content,type){var b=new Blob([content],{type:type});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);}
 document.getElementById('pAll').addEventListener('click',function(){setPreset('','');});
 document.getElementById('pErr').addEventListener('click',function(){setPreset('E:','');});
-document.getElementById('pRs').addEventListener('click',function(){setPreset('[RS485]','');});
+document.getElementById('pRs').addEventListener('click',function(){setPreset('[Balboa]','');});
 document.getElementById('pBridge').addEventListener('click',function(){setPreset('[BridgeDiag]','');});
 document.getElementById('pWifi').addEventListener('click',function(){setPreset('[WiFi]','');});
 fInc.addEventListener('input',refreshFromRendered);fExc.addEventListener('input',refreshFromRendered);
