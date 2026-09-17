@@ -125,14 +125,14 @@ void rs485Setup()
     {
       s_bootSafety.faultStreak++;
     }
-    Log.warning(F("[rs485]: Fault boot streak %u after UART begin attempt (reset=%d)" CR),
+    Log.warning(F("[Balboa]: Fault boot streak %u after UART begin attempt (reset=%d)" CR),
                 s_bootSafety.faultStreak, static_cast<int>(rr));
     if (s_bootSafety.faultStreak >= RS485_FAULT_STREAK_THRESHOLD)
     {
       s_bootSafety.safeMode = 1;
       s_safeModeReason = "fault_streak";
       rs485ClearNextCtsArm();
-      Log.error(F("[rs485]: Entering RS485 safe mode — UART skipped so Wi-Fi/OTA stay reachable" CR));
+      Log.error(F("[Balboa]: Entering RS485 safe mode — UART skipped so Wi-Fi/OTA stay reachable" CR));
 #if defined(DIAG_FAULT_CAPTURE)
       faultCaptureAppendf("[fault] rs485 safe mode streak=%u", s_bootSafety.faultStreak);
 #endif
@@ -155,7 +155,7 @@ void rs485Setup()
   }
   rs485Stats.polarityInverted = rs485PolarityInverted ? 1 : 0;
   rs485Stats.polarityLocked = rs485PolarityLocked ? 1 : 0;
-  Log.notice(F("[rs485]: Setup (UART deferred until Wi-Fi/OTA); safeMode=%u streak=%u" CR),
+  Log.notice(F("[Balboa]: Setup (UART deferred until Wi-Fi/OTA); safeMode=%u streak=%u" CR),
              s_bootSafety.safeMode, s_bootSafety.faultStreak);
 }
 
@@ -189,7 +189,7 @@ static void rs485ClearNextCtsArm()
   }
   rs485NextCtsArmed = false;
   rs485NextCtsFrameLength = 0;
-  Log.notice(F("[rs485]: Cleared armed next-CTS frame (UART unavailable / safe mode)" CR));
+  Log.notice(F("[Balboa]: Cleared armed next-CTS frame (UART unavailable / safe mode)" CR));
 }
 
 bool rs485UartBegun()
@@ -243,7 +243,7 @@ void rs485RequestRetry()
   s_bootSafety.beginAttempted = 0;
   s_safeModeReason = "";
   s_retryPending = true;
-  Log.notice(F("[rs485]: Retry requested — UART begin scheduled on main loop" CR));
+  Log.notice(F("[Balboa]: Retry requested — UART begin scheduled on main loop" CR));
 }
 
 bool rs485EnsureUartBegun()
@@ -257,7 +257,7 @@ bool rs485EnsureUartBegun()
   }
   if (s_bootSafety.safeMode)
   {
-    Log.warning(F("[rs485]: UART begin skipped (safe mode: %s)" CR), rs485SafeModeReason());
+    Log.warning(F("[Balboa]: UART begin skipped (safe mode: %s)" CR), rs485SafeModeReason());
     return false;
   }
   if (rs485PinsUnsafeForAtomLite())
@@ -265,7 +265,7 @@ bool rs485EnsureUartBegun()
     s_bootSafety.safeMode = 1;
     s_safeModeReason = "pico_flash_pins_16_17";
     rs485ClearNextCtsArm();
-    Log.error(F("[rs485]: Refusing UART on GPIO 16/17 (ESP32-PICO-D4 flash) — safe mode" CR));
+    Log.error(F("[Balboa]: Refusing UART on GPIO 16/17 (ESP32-PICO-D4 flash) — safe mode" CR));
 #if defined(DIAG_FAULT_CAPTURE)
     faultCaptureAppend("[fault] rs485 refused pins 16/17 on Atom Lite");
 #endif
@@ -280,9 +280,9 @@ bool rs485EnsureUartBegun()
 
   // Mark before begin so a crash during Serial2.begin counts toward safe mode.
   s_bootSafety.beginAttempted = 1;
-  Log.notice(F("[rs485]: Beginning UART RX GPIO %d TX GPIO %d" CR), TX485_Rx, TX485_Tx);
+  Log.notice(F("[Balboa]: Beginning UART RX GPIO %d TX GPIO %d" CR), TX485_Rx, TX485_Tx);
   applyRs485Polarity(false);
-  Log.verbose(F("[rs485]: RS485 setup, RX GPIO %d, TX GPIO %d, auto polarity detect %s" CR), TX485_Rx, TX485_Tx, "enabled");
+  Log.verbose(F("[Balboa]: RS485 setup, RX GPIO %d, TX GPIO %d, auto polarity detect %s" CR), TX485_Rx, TX485_Tx, "enabled");
   s_uartBegun = true;
   s_uartBegunAtMs = millis();
   return true;
@@ -302,7 +302,7 @@ void rs485BootSafetyTick()
   {
     s_bootSafety.beginAttempted = 0;
     s_bootSafety.faultStreak = 0;
-    Log.notice(F("[rs485]: Cleared UART begin-attempt / fault streak after healthy uptime" CR));
+    Log.notice(F("[Balboa]: Cleared UART begin-attempt / fault streak after healthy uptime" CR));
   }
   // Keep s_uartBegunAtMs so rs485UartUptimeMs() stays valid for LED no-spa grace.
 }
@@ -325,7 +325,7 @@ void rs485Loop()
       rs485Stats.polaritySwitchesToday++;
       applyRs485Polarity(rs485PolarityDetectPhase == 1);
       spaMessage.clear();
-      Log.warning(F("[rs485]: No valid frames yet, retrying with %s mode (RX/TX inversion toggled)" CR),
+      Log.warning(F("[Balboa]: No valid frames yet, retrying with %s mode (RX/TX inversion toggled)" CR),
                   rs485ModeName(rs485PolarityInverted));
     }
   }
@@ -381,7 +381,7 @@ void rs485CheckSpaSilenceWatchdog()
   }
   restartArmed = false;
   setLastRestartReason("SPA silence watchdog");
-  Log.error(F("[rs485]: No valid frame for %lums (limit %us), restarting" CR),
+  Log.error(F("[Balboa]: No valid frame for %lums (limit %us), restarting" CR),
             static_cast<unsigned long>(ageMs),
             static_cast<unsigned>(RUNNING_WDT_TIMEOUT));
   delay(50);
@@ -439,7 +439,7 @@ void rs485ProcessByte(uint8_t x, uint8_t uartAvailable)
   if (spaMessage.size() > BALBOA_MESSAGE_SIZE - 1)
   {
     rs485Stats.badFormatToday++;
-    Log.warning(F("[rs485]: Invalid message, too long: %s" CR), msgToString(spaMessage).c_str());
+    Log.warning(F("[Balboa]: Invalid message, too long: %s" CR), msgToString(spaMessage).c_str());
     spaMessage.clear();
   }
 
@@ -449,20 +449,20 @@ void rs485ProcessByte(uint8_t x, uint8_t uartAvailable)
 
   if (x == 0x7E && spaMessage.size() > 2)
   {
-    // Log.verbose(F("[rs485]: spaMessage %s, size %d, supplied size %d, %d" CR), msgToString(spaMessage).c_str(), spaMessage.size(), spaMessage[1] + 2, isMessageValid(spaMessage));
+    // Log.verbose(F("[Balboa]: spaMessage %s, size %d, supplied size %d, %d" CR), msgToString(spaMessage).c_str(), spaMessage.size(), spaMessage[1] + 2, isMessageValid(spaMessage));
   }
 
   if (spaMessage.size() == 4 && (spaMessage[1] > BALBOA_MESSAGE_SIZE || !(spaMessage[3] == 0xBF || spaMessage[3] == 0xAF)))
   {
     rs485Stats.badFormatToday++;
-    Log.warning(F("[rs485]: Invalid message, corrupted length/broadcast flag: %s" CR), msgToString(spaMessage).c_str());
+    Log.warning(F("[Balboa]: Invalid message, corrupted length/broadcast flag: %s" CR), msgToString(spaMessage).c_str());
     spaMessage.clear();
   }
 
   if (spaMessage.size() > 1 && spaMessage.size() - 2 > spaMessage[1])
   {
     rs485Stats.badFormatToday++;
-    Log.warning(F("[rs485]: Invalid message, corrupted length: %s" CR), msgToString(spaMessage).c_str());
+    Log.warning(F("[Balboa]: Invalid message, corrupted length: %s" CR), msgToString(spaMessage).c_str());
     spaMessage.clear();
   }
 
@@ -472,7 +472,7 @@ void rs485ProcessByte(uint8_t x, uint8_t uartAvailable)
 
     if (isMessageValid(spaMessage))
     {
-      // Log.verbose(F("[rs485]: Received: %d - %s" CR), id, msgToString(spaMessage).c_str());
+      // Log.verbose(F("[Balboa]: Received: %d - %s" CR), id, msgToString(spaMessage).c_str());
       rs485Stats.messagesToday++;
       rs485Stats.lastValidFrameMs = millis();
       rs485ValidFramesSinceBoot++;
@@ -481,7 +481,7 @@ void rs485ProcessByte(uint8_t x, uint8_t uartAvailable)
         rs485PolarityLocked = true;
         rs485PolarityDetectPhase = 2;
         rs485Stats.polarityLocked = 1;
-        Log.notice(F("[rs485]: Polarity auto-detect locked on %s mode after first valid frame" CR),
+        Log.notice(F("[Balboa]: Polarity auto-detect locked on %s mode after first valid frame" CR),
                    rs485ModeName(rs485PolarityInverted));
       }
       if (id == 0)
@@ -489,11 +489,11 @@ void rs485ProcessByte(uint8_t x, uint8_t uartAvailable)
         if (Status_Update(spaMessage)) // This is hacky, but it appears to work
         {
           id = WIFI_MODULE_ID;
-          Log.verbose(F("[rs485]: Set SPA id 0x0A" CR));
+          Log.verbose(F("[Balboa]: Set SPA id 0x0A" CR));
           sendExistingClientResponse(id);
           // Shorter TWDT catches a stuck loop; spa silence uses rs485CheckSpaSilenceWatchdog().
           esp_task_wdt_init(RUNNING_WDT_TIMEOUT, true);
-          Log.notice(F("[rs485]: Spa id assigned; loop TWDT %us, spa silence watchdog armed" CR),
+          Log.notice(F("[Balboa]: Spa id assigned; loop TWDT %us, spa silence watchdog armed" CR),
                      (unsigned)RUNNING_WDT_TIMEOUT);
           spaMessage.clear();
         }
@@ -534,17 +534,17 @@ void rs485ProcessByte(uint8_t x, uint8_t uartAvailable)
 
         if (xQueueSend(spaReadQueue, &messageToSend, 0) != pdTRUE)
         {
-          Log.error(F("[rs485]: SPA Read Queue full, dropped %s" CR), msgToString(messageToSend->message, messageToSend->length).c_str());
+          Log.error(F("[Balboa]: SPA Read Queue full, dropped %s" CR), msgToString(messageToSend->message, messageToSend->length).c_str());
         }
         else
         {
-          Log.verbose(F("[rs485]: Data added to Read Queue [%d]%s" CR), messageToSend->length, msgToString(messageToSend->message, messageToSend->length).c_str());
+          // Log.verbose(F("[Balboa]: Data added to Read Queue [%d]%s" CR), messageToSend->length, msgToString(messageToSend->message, messageToSend->length).c_str());
         }
       }
     }
     else
     {
-      Log.warning(F("[rs485]: Invalid message, crc failed: %s" CR), msgToString(spaMessage).c_str());
+      Log.warning(F("[Balboa]: Invalid message, crc failed: %s" CR), msgToString(spaMessage).c_str());
     }
     spaMessage.clear();
   }
@@ -628,7 +628,7 @@ bool rs485ArmFrameOnNextCts(const uint8_t *frame, int length, uint32_t *outArmCo
 {
   if (!s_uartBegun || s_bootSafety.safeMode)
   {
-    Log.warning(F("[rs485]: next-CTS arm rejected — UART not ready (%s)" CR), rs485HealthCode());
+    Log.warning(F("[Balboa]: next-CTS arm rejected — UART not ready (%s)" CR), rs485HealthCode());
     return false;
   }
   if (frame == nullptr || length <= 0 || length > BALBOA_MESSAGE_SIZE)
@@ -750,7 +750,7 @@ void rs485Write(CircularBuffer<uint8_t, BALBOA_MESSAGE_SIZE> &data)
 
   if (data[4] != Nothing_to_Send_Type)
   {
-    Log.verbose(F("[rs485]: Sent: %s" CR), msgToString(data).c_str());
+    Log.verbose(F("[Balboa]: Sent: %s" CR), msgToString(data).c_str());
     BRIDGE_LOG_NOISY(F("[BridgeDiag]: rs485_sent ms=%lu frame=%s" CR), millis(), msgToString(data).c_str());
   }
   data.clear();
@@ -778,7 +778,7 @@ void applyRs485Polarity(bool inverted)
 #endif
   rs485PolarityDetectWindowStartMs = millis();
 
-  Log.notice(F("[rs485]: UART mode set to %s (RX/TX %s)" CR),
+  Log.notice(F("[Balboa]: UART mode set to %s (RX/TX %s)" CR),
              rs485ModeName(rs485PolarityInverted),
              rs485PolarityInverted ? "inverted" : "normal");
 }
@@ -956,9 +956,9 @@ bool isMessageValid(CircularBuffer<uint8_t, BALBOA_MESSAGE_SIZE> &data)
   {
     message[i - 1] = data[i];
   }
-  //  Log.verbose(F("[rs485]: Data: %d - %s" CR), data.size(), msgToString(data).c_str());
-  //  Log.verbose(F("[rs485]: message: %s" CR), msgToString(message, data.size() - 3).c_str());
-  //  Log.verbose(F("[rs485]: CRC: %x, %x" CR), crc8(message, data.size() - 3), data[data[1]]);
+  //  Log.verbose(F("[Balboa]: Data: %d - %s" CR), data.size(), msgToString(data).c_str());
+  //  Log.verbose(F("[Balboa]: message: %s" CR), msgToString(message, data.size() - 3).c_str());
+  //  Log.verbose(F("[Balboa]: CRC: %x, %x" CR), crc8(message, data.size() - 3), data[data[1]]);
   if (crc8(message, data.size() - 3) != data[data[1]])
   {
     rs485Stats.crcToday++;
@@ -979,7 +979,7 @@ void sendExistingClientResponse(uint8_t id)
 
   addCRC(dataBuffer);
   rs485Write(dataBuffer);
-  Log.verbose(F("[rs485]: Sent Existing Client Response" CR), msgToString(dataBuffer).c_str());
+  Log.verbose(F("[Balboa]: Sent Existing Client Response" CR), msgToString(dataBuffer).c_str());
 }
 
 /*

@@ -302,7 +302,7 @@ void spaMessageLoop()
     if (xQueueReceive(spaReadQueue, &message, 0) == pdTRUE)
     {
       esp_task_wdt_reset();
-      Log.verbose(F("[Mess]: Dequeued type 0x%02x, len %d" CR), message->message[4], message->length);
+      // Log.verbose(F("[Mess]: Dequeued type 0x%02x, len %d" CR), message->message[4], message->length);
 #if defined(LOCAL_CONNECT) || defined(BRIDGE)
       if (message->message[2] == id || message->message[2] == 0xff)
       {
