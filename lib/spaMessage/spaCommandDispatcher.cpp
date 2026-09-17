@@ -158,7 +158,7 @@ int spaPumpToggleCountForSpeed(uint8_t pumpId, uint8_t desiredSpeed)
   return delta;
 }
 
-int spaToggleCountForButtonRequest(uint8_t itemCode, bool requestHasState, bool desiredOn)
+int spaToggleCountForButtonRequest(uint8_t itemCode, bool requestHasState, int desiredState)
 {
   // Lights are binary; one toggle transitions state.
   if (itemCode == 17 || itemCode == 18)
@@ -168,6 +168,7 @@ int spaToggleCountForButtonRequest(uint8_t itemCode, bool requestHasState, bool 
       return 1;
     }
     const bool isOn = (itemCode == 17 ? spaStatusData.light1 : spaStatusData.light2);
+    const bool desiredOn = (desiredState > 0);
     return (isOn == desiredOn) ? 0 : 1;
   }
 
@@ -179,7 +180,7 @@ int spaToggleCountForButtonRequest(uint8_t itemCode, bool requestHasState, bool 
       return 1;
     }
     const uint8_t pumpId = (itemCode - 3);
-    const uint8_t desiredSpeed = desiredOn ? 1 : 0;
+    const uint8_t desiredSpeed = (uint8_t)desiredState;
     return spaPumpToggleCountForSpeed(pumpId, desiredSpeed);
   }
 
@@ -191,7 +192,7 @@ int spaToggleCountForButtonRequest(uint8_t itemCode, bool requestHasState, bool 
       return 1;
     }
     const bool isHigh = (spaStatusData.tempRange != 0);
-    const bool wantHigh = desiredOn;
+    const bool wantHigh = (desiredState > 0);
     return (isHigh == wantHigh) ? 0 : 1;
   }
 
@@ -203,7 +204,7 @@ int spaToggleCountForButtonRequest(uint8_t itemCode, bool requestHasState, bool 
       return 1;
     }
     const bool inRest = (spaStatusData.heatingMode == 1);
-    const bool wantReady = desiredOn;
+    const bool wantReady = (desiredState > 0);
     return (wantReady == !inRest) ? 0 : 1;
   }
 
@@ -213,7 +214,7 @@ int spaToggleCountForButtonRequest(uint8_t itemCode, bool requestHasState, bool 
 
 SpaCommandResult spaSendButtonForBinaryState(uint8_t itemCode, bool desiredOn, SpaCommandSource source)
 {
-  const int togglesToSend = spaToggleCountForButtonRequest(itemCode, true, desiredOn);
+  const int togglesToSend = spaToggleCountForButtonRequest(itemCode, true, desiredOn ? 1 : 0);
   if (togglesToSend < 0)
   {
     return {false, SPA_COMMAND_INVALID_ARGUMENT, "invalid button request"};

@@ -2151,6 +2151,77 @@ static void appendStatusControlCell(HtmlOut &html, const char *label, const char
   html += "</div>";
 }
 
+template <typename HtmlOut>
+static void appendStatusControlCellPump(HtmlOut &html, const char *label, const char *equipKey, unsigned pumpId, int buttonCode)
+{
+  bool configuredAbsent = statusPumpConfiguredAbsent(pumpId);
+  if (configuredAbsent)
+  {
+    html += "<div class=\"equip-cell equip-absent\" title=\"Not installed (spa configuration)\"";
+  }
+  else
+  {
+    const char *equipStateClass = statusPumpEquipStateClass(pumpId, configuredAbsent);
+    html += "<div class=\"equip-cell";
+    if (equipStateClass != nullptr && equipStateClass[0] != '\0')
+    {
+      html += " equip-cell--";
+      html += equipStateClass;
+    }
+    html += "\"";
+  }
+  html += " data-equip=\"";
+  html += equipKey;
+  html += "\">";
+  html += "<div class=\"equip-label\">";
+  html += label;
+  html += "</div><div class=\"equip-val\" data-role=\"value\">";
+  html += statusPumpDisplayState(pumpId);
+  html += "</div>";
+
+  if (!configuredAbsent && buttonCode > 0)
+  {
+    uint8_t cfg = statusPumpConfigSpeed(pumpId);
+    uint8_t rawState = statusPumpRawState(pumpId);
+    html += "<div class=\"equip-actions";
+    if (cfg == 2) {
+      html += " equip-actions--multi";
+    }
+    html += "\">";
+    
+    if (cfg == 2) {
+       html += "<button class=\"equip-btn\" type=\"button\" data-button=\"";
+       html += String(buttonCode);
+       html += "\" data-state=\"off\" onclick=\"statusSendButton(this)\"";
+       if (rawState == 0) html += " disabled";
+       html += ">Off</button>";
+
+       html += "<button class=\"equip-btn\" type=\"button\" data-button=\"";
+       html += String(buttonCode);
+       html += "\" data-state=\"low\" onclick=\"statusSendButton(this)\"";
+       if (rawState == 1) html += " disabled";
+       html += ">Low</button>";
+
+       html += "<button class=\"equip-btn\" type=\"button\" data-button=\"";
+       html += String(buttonCode);
+       html += "\" data-state=\"high\" onclick=\"statusSendButton(this)\"";
+       if (rawState == 2) html += " disabled";
+       html += ">High</button>";
+    } else {
+       html += "<button class=\"equip-btn\" type=\"button\" data-button=\"";
+       html += String(buttonCode);
+       html += "\" data-state=\"";
+       const char* desiredState = statusPumpIsOn(pumpId) ? "off" : "on";
+       html += desiredState;
+       html += "\" onclick=\"statusSendButton(this)\">Turn ";
+       html += statusPumpIsOn(pumpId) ? "Off" : "On";
+       html += "</button>";
+    }
+    html += "</div>";
+  }
+  html += "</div>";
+}
+
 /** Spa status `tempScale`: 0 = Fahrenheit (1°F steps), 1 = Celsius (0.5°C steps). */
 static bool statusSpaTempReady()
 {
@@ -2474,12 +2545,12 @@ void handleStatus(AsyncWebServerRequest *request)
   html += "<label class=\"status-equip-show-absent-lbl\"><input type=\"checkbox\" id=\"statusEquipShowAbsent\" "
           "onchange=\"statusToggleEquipAbsent(this.checked)\" /> Show not installed</label></div>";
   html += "<div class=\"equip-grid status-equip-hide-absent\" id=\"statusEquipGrid\">";
-  appendStatusControlCell(html, "Pump 1", "pump1", statusPumpDisplayState(1), statusPumpConfiguredAbsent(1), 4, statusPumpIsOn(1) ? "off" : "on", statusPumpEquipStateClass(1, statusPumpConfiguredAbsent(1)));
-  appendStatusControlCell(html, "Pump 2", "pump2", statusPumpDisplayState(2), statusPumpConfiguredAbsent(2), 5, statusPumpIsOn(2) ? "off" : "on", statusPumpEquipStateClass(2, statusPumpConfiguredAbsent(2)));
-  appendStatusControlCell(html, "Pump 3", "pump3", statusPumpDisplayState(3), statusPumpConfiguredAbsent(3), 6, statusPumpIsOn(3) ? "off" : "on", statusPumpEquipStateClass(3, statusPumpConfiguredAbsent(3)));
-  appendStatusControlCell(html, "Pump 4", "pump4", statusPumpDisplayState(4), statusPumpConfiguredAbsent(4), 7, statusPumpIsOn(4) ? "off" : "on", statusPumpEquipStateClass(4, statusPumpConfiguredAbsent(4)));
-  appendStatusControlCell(html, "Pump 5", "pump5", statusPumpDisplayState(5), statusPumpConfiguredAbsent(5), 8, statusPumpIsOn(5) ? "off" : "on", statusPumpEquipStateClass(5, statusPumpConfiguredAbsent(5)));
-  appendStatusControlCell(html, "Pump 6", "pump6", statusPumpDisplayState(6), statusPumpConfiguredAbsent(6), 9, statusPumpIsOn(6) ? "off" : "on", statusPumpEquipStateClass(6, statusPumpConfiguredAbsent(6)));
+  appendStatusControlCellPump(html, "Pump 1", "pump1", 1, 4);
+  appendStatusControlCellPump(html, "Pump 2", "pump2", 2, 5);
+  appendStatusControlCellPump(html, "Pump 3", "pump3", 3, 6);
+  appendStatusControlCellPump(html, "Pump 4", "pump4", 4, 7);
+  appendStatusControlCellPump(html, "Pump 5", "pump5", 5, 8);
+  appendStatusControlCellPump(html, "Pump 6", "pump6", 6, 9);
   appendStatusControlCell(html, "Circulation Pump", "circ", getMapDescription(spaStatusData.circ, onOffMap), statusCircConfiguredAbsent(), 0, nullptr, statusBinaryEquipStateClass(statusCircConfiguredAbsent(), spaStatusData.circ != 0));
   appendStatusControlCell(html, "Blower", "blower", String(spaBlowerBinaryLabel(spaStatusData.blower)), statusBlowerConfiguredAbsent(), 12, spaStatusData.blower == 0 ? "on" : "off", statusBinaryEquipStateClass(statusBlowerConfiguredAbsent(), spaStatusData.blower != 0));
   appendStatusControlCell(html, "Light 1", "light1", getMapDescription(spaStatusData.light1, onOffMap), statusLightConfiguredAbsent(1), 17, spaStatusData.light1 ? "off" : "on", statusBinaryEquipStateClass(statusLightConfiguredAbsent(1), spaStatusData.light1 != 0));
@@ -4711,7 +4782,12 @@ String parseBody(String body)
       String itemCodeRaw = (separator > 0 ? value.substring(0, separator) : value);
       String desiredStateRaw = (separator > 0 ? value.substring(separator + 1) : "");
       bool requestHasState = separator > 0;
-      bool desiredOn = desiredStateRaw.equalsIgnoreCase("on");
+      int desiredState = 0;
+      if (desiredStateRaw.equalsIgnoreCase("on") || desiredStateRaw.equalsIgnoreCase("low")) {
+        desiredState = 1;
+      } else if (desiredStateRaw.equalsIgnoreCase("high")) {
+        desiredState = 2;
+      }
       int itemCode = itemCodeRaw.toInt();
       if (itemCode <= 0 || itemCode > 255)
       {
@@ -4719,7 +4795,7 @@ String parseBody(String body)
         return response;
       }
 
-      int togglesToSend = spaToggleCountForButtonRequest((uint8_t)itemCode, requestHasState, desiredOn);
+      int togglesToSend = spaToggleCountForButtonRequest((uint8_t)itemCode, requestHasState, desiredState);
       Log.verbose("[Web]: Button request raw=%s item=%d desired=%s toggles=%d" CR, value.c_str(), itemCode, (requestHasState ? desiredStateRaw.c_str() : "n/a"), togglesToSend);
       if (togglesToSend < 0)
       {

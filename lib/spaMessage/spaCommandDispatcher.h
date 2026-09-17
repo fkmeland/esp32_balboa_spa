@@ -57,7 +57,7 @@ bool spaHasFreshStatus();
 /** Balboa 0x20 limits for current `spaStatusData.tempScale` + `tempRange` (see protocol.md). */
 void spaProtocolActiveSetpointBand(float &minBand, float &maxBand);
 SpaCommandResult spaSendToggleCommand(uint8_t itemCode, SpaCommandSource source = SPA_COMMAND_SOURCE_UNKNOWN);
-int spaToggleCountForButtonRequest(uint8_t itemCode, bool requestHasState, bool desiredOn);
+int spaToggleCountForButtonRequest(uint8_t itemCode, bool requestHasState, int desiredState);
 int spaPumpToggleCountForSpeed(uint8_t pumpId, uint8_t desiredSpeed);
 SpaCommandResult spaSendButtonForBinaryState(uint8_t itemCode, bool desiredOn, SpaCommandSource source = SPA_COMMAND_SOURCE_UNKNOWN);
 SpaCommandResult spaSendButtonForPumpSpeed(uint8_t pumpId, uint8_t desiredSpeed, SpaCommandSource source = SPA_COMMAND_SOURCE_UNKNOWN);
