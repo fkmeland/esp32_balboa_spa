@@ -364,11 +364,7 @@ static void maybeLogPendingTime()
     Log.warning(F("[WiFi]: NTP not synced yet (retry %d), re-arming SNTP..." CR), ntpRetryCount);
     sntp_stop();
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
-#ifdef WIFI_TZ_INFO
-    configTzTime(WIFI_TZ_INFO, "pool.ntp.org", "time.nist.gov", "time.google.com");
-#else
     configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org", "time.nist.gov", "time.google.com");
-#endif
   }
 }
 
