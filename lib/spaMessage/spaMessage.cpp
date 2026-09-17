@@ -696,12 +696,14 @@ Byte	Name	Description/Values
 
 bool parseStatusMessage(u_int8_t *message, int length)
 {
+  time_t now = getTime();
+  bool staleEpoch = (spaStatusData.lastUpdate < 1000000 && now > 1000000);
 
-  if (spaStatusData.crc != message[message[1]])
+  if (spaStatusData.crc != message[message[1]] || staleEpoch)
   {
     spaStatusData.rawData[0] = message[0];
     spaStatusData.crc = message[message[1]];
-    spaStatusData.lastUpdate = getTime();
+    spaStatusData.lastUpdate = now;
     spaStatusData.lastUpdateMs = millis();
     for (int i = 0; i < length && i < BALBOA_MESSAGE_SIZE; i++)
     {
