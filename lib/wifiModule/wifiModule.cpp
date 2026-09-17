@@ -329,6 +329,9 @@ static void applyConnectedSideEffects()
 #endif
 }
 
+static unsigned long lastNtpRetryMs = 0;
+static uint8_t ntpRetryCount = 0;
+
 static void maybeLogPendingTime()
 {
   if (wifiTimeLogged || WiFi.status() != WL_CONNECTED)
@@ -343,6 +346,23 @@ static void maybeLogPendingTime()
     Log.notice(F("[WiFi]: Time: %s" CR), timeCharArray);
     wifiTimeLogged = true;
     return;
+  }
+
+  unsigned long now = millis();
+  if (lastNtpRetryMs == 0)
+  {
+    lastNtpRetryMs = now;
+  }
+  else if (now - lastNtpRetryMs > 15000UL) // Retry every 15s to quickly resolve soft-reboot or DNS issues
+  {
+    lastNtpRetryMs = now;
+    ntpRetryCount++;
+    if (ntpRetryCount <= 3) {
+      Log.warning(F("[WiFi]: NTP not synced (attempt %d). Forcing SNTP restart..." CR), ntpRetryCount);
+    }
+    sntp_stop();
+    sntp_set_time_sync_notification_cb(time_sync_notification_cb);
+    configTzTime(WIFI_TZ_INFO, "pool.ntp.org", "time.nist.gov", "time.google.com");
   }
 }
 
