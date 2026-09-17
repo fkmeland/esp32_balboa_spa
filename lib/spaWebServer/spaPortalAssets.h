@@ -520,6 +520,18 @@ static const char kPortalStatusJs[] PROGMEM =
     "if(changed){statusSetResult('statusSystemTimeResult','Panel time synced from gateway.');var inp=document.getElementById('statusPanelTimeInput');if(inp)inp.value=gt;statusApplySnapshot(await statusFetchControls());}"
     "else{statusSetResult('statusSystemTimeResult','Command accepted; panel time did not match yet.');}"
     "}catch(e){statusSetResult('statusSystemTimeResult','Sync failed: '+e);}"
+    "}"
+    "var rmBtn=document.getElementById('statusReminderClearBtn');"
+    "if(rmBtn){rmBtn.addEventListener('click',async function(){"
+    "if(rmBtn.disabled)return;"
+    "rmBtn.disabled=true;rmBtn.textContent='...';"
+    "try{"
+    "const out=await statusSendSci('<device_request target_name=\"Button\">3</device_request>');"
+    "if(out.indexOf('result=\\'accepted\\'')>=0){"
+    "rmBtn.textContent='Cleared';statusSchedulePoll(1000);"
+    "}else{rmBtn.textContent='Failed';rmBtn.disabled=false;}"
+    "}catch(e){rmBtn.textContent='Error';rmBtn.disabled=false;}"
+    "});}"
     "}";
 
 static const char kPortalConfigJs[] PROGMEM =
