@@ -2338,9 +2338,7 @@ void handleStatus(AsyncWebServerRequest *request)
                 ? spaReminderHintText(spaStatusData.reminderType, spaStatusData.spaState)
                 : "";
     html += "</p></div>";
-    if (reminderActive) {
-      html += "<button type=\"button\" id=\"statusReminderClearBtn\" class=\"equip-btn\" style=\"margin-left:auto\">Clear</button>";
-    }
+    html += "<button type=\"button\" id=\"statusReminderClearBtn\" class=\"equip-btn\" style=\"margin-left:auto\">Clear</button>";
     html += "</div>";
     html += F("<div class=\"status-layout\">");
   }
