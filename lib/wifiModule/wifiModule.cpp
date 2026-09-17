@@ -286,11 +286,7 @@ static void applyConnectedSideEffects()
   if (!wifiNtpConfigured)
   {
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
-#ifdef WIFI_TZ_INFO
     configTzTime(WIFI_TZ_INFO, "pool.ntp.org", "time.nist.gov", "time.google.com");
-#else
-    configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org", "time.nist.gov", "time.google.com");
-#endif
     wifiNtpConfigured = true;
   }
 

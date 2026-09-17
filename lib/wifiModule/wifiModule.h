@@ -74,6 +74,10 @@
 #define WIFI_OFFLINE_RESTART_LOG_INTERVAL_MS 30000UL
 #endif
 
+#ifndef WIFI_TZ_INFO
+#define WIFI_TZ_INFO "CET-1CEST,M3.5.0,M10.5.0/3"
+#endif
+
 const long gmtOffset_sec = GMT_OFFSET;
 const int daylightOffset_sec = DAYLIGHT_OFFSET;
 extern char gatewayName[20];
