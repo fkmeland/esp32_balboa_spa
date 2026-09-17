@@ -2472,7 +2472,7 @@ void handleStatus(AsyncWebServerRequest *request)
   {
     String clockRawTitle = String("Raw status flag (status byte 9 & 0x02): ") + String(spaStatusData.clockMode);
     html += "<section class=\"panel\"><h2>Panel clock and filter cycles</h2>";
-    html += "<p class=\"chart-caption\">Times are the <b>spa panel clock</b> from RS485 status (not the ESP clock on <a href='/state'>/state</a>). "
+    html += "<p class=\"chart-caption\">Times are the <b>spa panel clock</b> from Balboa status (not the ESP clock on <a href='/state'>/state</a>). "
             "<b>Panel clock format</b> is how the physical panel shows time (12h vs 24h). "
             "<b>Filter cycle (status)</b> is which programmed daily filter window the controller reports as active; schedule start/duration is on <a href='/config'>/config</a>.</p>";
     html += "<dl class=\"kv\">";
@@ -2772,7 +2772,7 @@ void handleConfig(AsyncWebServerRequest *request)
           "<a href=\"https://github.com/ccutrer/balboa_worldwide_app/blob/main/doc/protocol.md\" target=\"_blank\" rel=\"noopener\">protocol.md — Information Response</a>.</p>";
   if (spaInformationData.lastUpdateMs == 0)
   {
-    html += "<p style=\"margin:0\"><em>Not received yet.</em> The gateway requests this after startup; wait on RS485 or check "
+    html += "<p style=\"margin:0\"><em>Not received yet.</em> The gateway requests this after startup; wait for Balboa data or check "
             "<a href='/state'>ESP State</a> → Spa Data Freshness → Information.</p>";
     html += "</section>";
   }
@@ -2801,7 +2801,7 @@ void handleConfig(AsyncWebServerRequest *request)
   }
   if (spaFilterSettingsData.lastUpdateMs == 0)
   {
-    html += "<p style=\"margin:0\"><em>Filter settings not received yet — editing disabled until RS485 data is available.</em></p>";
+    html += "<p style=\"margin:0\"><em>Filter settings not received yet — editing disabled until Balboa data is available.</em></p>";
   }
   else
   {
@@ -2947,7 +2947,7 @@ void handleConfig(AsyncWebServerRequest *request)
             spaHexWordsUpper(spaFaultLogData.rawData, spaFaultLogData.rawDataLength, 48) + "</pre></details>";
     html += "</div>";
     html += "<details id=\"cfgFaultHistoryDetails\"><summary><b>View full event history</b></summary>";
-    html += "<p class=\"chart-caption\" style=\"margin:8px 0\">Loads every stored log entry from the spa controller over RS485 "
+    html += "<p class=\"chart-caption\" style=\"margin:8px 0\">Loads every stored log entry from the spa controller over Balboa Serial "
             "(may take up to a minute).</p>";
     html += "<button class=\"equip-btn\" type=\"button\" id=\"cfgFaultHistoryLoadBtn\">Load history from spa</button>";
     html += "<p id=\"cfgFaultHistoryStatus\" class=\"chart-caption\" style=\"margin:8px 0 0 0\"></p>";
@@ -3090,7 +3090,7 @@ void handleState(AsyncWebServerRequest *request)
           "</div></div>";
   appendGatewayChipTempStateSubCard(html);
 #ifdef LOCAL_CLIENT
-  html += "<div class='sub-card'><p class='sub-card-title'>RS485 today</p>"
+  html += "<div class='sub-card'><p class='sub-card-title'>Balboa Protocol today</p>"
           "<div style='margin-bottom:8px'><span class='diag-badge' style='font-weight:700;color:#fff;background:" + String(rs485Stats.polarityInverted ? "#0f4a87" : "#4b5563") + "'>" + String(rs485Stats.polarityInverted ? "inverted_rx_tx" : "normal") + "</span></div>"
           "<dl class='wifi-kv'><dt>Valid frames</dt><dd>" + formatNumberWithCommas(rs485Stats.messagesToday) + "</dd>"
           "<dt>CRC errors</dt><dd>" + formatNumberWithCommas(rs485Stats.crcToday) + "</dd>"
