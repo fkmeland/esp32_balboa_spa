@@ -531,8 +531,7 @@ static const char kPortalStatusJs[] PROGMEM =
     "rmBtn.textContent='Cleared';statusSchedulePoll(1000);"
     "}else{rmBtn.textContent='Failed';rmBtn.disabled=false;}"
     "}catch(e){rmBtn.textContent='Error';rmBtn.disabled=false;}"
-    "});}"
-    "}";
+    "});}";
 
 static const char kPortalConfigJs[] PROGMEM =
     "(function(){var btn=document.getElementById('cfgLoadLittleFsBtn');var box=document.getElementById('cfgLittleFsContainer');"
