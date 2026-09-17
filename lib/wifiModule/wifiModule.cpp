@@ -286,9 +286,7 @@ static void applyConnectedSideEffects()
   if (!wifiNtpConfigured)
   {
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
-    setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
-    tzset();
-    configTime(0, 0, "pool.ntp.org", "time.nist.gov", "time.google.com");
+    configTzTime("CET-1CEST,M3.5.0,M10.5.0/3", "pool.ntp.org", "time.nist.gov", "time.google.com");
     wifiNtpConfigured = true;
   }
 
@@ -362,9 +360,7 @@ static void maybeLogPendingTime()
     Log.warning(F("[WiFi]: NTP not synced yet (retry %d), re-arming SNTP..." CR), ntpRetryCount);
     sntp_stop();
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
-    setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
-    tzset();
-    configTime(0, 0, "pool.ntp.org", "time.nist.gov", "time.google.com");
+    configTzTime("CET-1CEST,M3.5.0,M10.5.0/3", "pool.ntp.org", "time.nist.gov", "time.google.com");
   }
 }
 
